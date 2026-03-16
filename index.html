@@ -98,7 +98,14 @@
             <div class="table-responsive">
                 <table class="table table-sm table-hover small">
                     <thead class="table-primary text-center">
-                        <tr><th>Jam</th><th>Nama</th><th>Pesanan</th><th>Total</th></tr>
+                        <tr>
+                            <th>Jam</th>
+                            <th>Nama</th>
+                            <th>Alamat</th>
+                            <th>No WA</th>
+                            <th>Pesanan</th>
+                            <th>Total</th>
+                        </tr>
                     </thead>
                     <tbody id="order-history-list"></tbody>
                 </table>
@@ -161,7 +168,7 @@
         adminPhone: "6285281635766",
         pass: "25051987",
         shippingFee: 5000,
-        scriptURL: 'TEMPEL_URL_WEB_APP_ANDA_DISINI' // <-- GANTI DENGAN URL GOOGLE SCRIPT ANDA
+        scriptURL: 'TEMPEL_URL_WEB_APP_ANDA_DISINI' 
     };
 
     const DB_KEY = 'nrg_fast_delivery_v3_menu';
@@ -173,14 +180,12 @@
     let currentFilter = "Semua";
     let isEditing = false;
 
-    // --- Inisialisasi ---
     function init() {
         renderFilters();
         renderMenu();
         updateCart();
     }
 
-    // --- Admin & Rekap ---
     function toggleAdmin() {
         const panel = document.getElementById('admin-panel');
         if (panel.style.display === 'none' || panel.style.display === '') {
@@ -199,7 +204,7 @@
         const todayOrders = history.filter(o => o.date === today);
 
         if (todayOrders.length === 0) {
-            container.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Belum ada pesanan hari ini.</td></tr>';
+            container.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Belum ada pesanan hari ini.</td></tr>';
             return;
         }
 
@@ -207,6 +212,8 @@
             <tr>
                 <td class="text-center">${o.time}</td>
                 <td class="fw-bold">${o.customer}</td>
+                <td style="font-size:0.75rem">${o.address || '-'}</td>
+                <td style="font-size:0.75rem">${o.phone || '-'}</td>
                 <td style="font-size:0.7rem">${o.items}</td>
                 <td class="text-end fw-bold">Rp ${o.total.toLocaleString()}</td>
             </tr>
@@ -220,7 +227,6 @@
         }
     }
 
-    // --- Menu & Filter ---
     function renderFilters() {
         document.getElementById('filter-container').innerHTML = categories.map(cat => `
             <div class="badge rounded-pill category-pill px-4 py-2 ${currentFilter === cat ? 'active' : ''}" 
@@ -264,7 +270,6 @@
         renderMenu(menuData.filter(m => m.name.toLowerCase().includes(key) || m.seller.toLowerCase().includes(key)));
     }
 
-    // --- Keranjang ---
     function addToCart(id) {
         const item = menuData.find(x => x.id === id);
         const cartItem = cart.find(x => x.id === id);
@@ -303,7 +308,6 @@
         document.getElementById('c-time').style.display = (document.getElementById('c-delivery').value === "Lainnya") ? "block" : "none";
     }
 
-    // --- PROSES CHECKOUT (GABUNGAN) ---
     async function processCheckout() {
         const name = document.getElementById('c-name').value;
         const wa = document.getElementById('c-wa').value;
@@ -324,17 +328,17 @@
             date: new Date().toLocaleDateString('id-ID'),
             time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
             customer: name,
+            phone: wa,
+            address: addr,
             items: itemsText,
             total: total
         };
 
-        // 1. SIMPAN LOKAL
         const history = JSON.parse(localStorage.getItem(LOG_KEY)) || [];
         history.push(orderData);
         localStorage.setItem(LOG_KEY, JSON.stringify(history));
 
-        // 2. KIRIM GOOGLE SHEETS
-        if(config.scriptURL !== 'https://script.google.com/macros/s/AKfycbx5z_gwIFRxOb3sLmE-1Yr_k0zx_4Tlq2S8ZEY_3mjbaRL4vCTeO_XhpPpkHGL0PLVF/exec') {
+        if(config.scriptURL !== 'TEMPEL_URL_WEB_APP_ANDA_DISINI') {
             fetch(config.scriptURL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -342,8 +346,7 @@
             }).catch(e => console.log("Sheets Error"));
         }
 
-        // 3. KIRIM WHATSAPP
-        let txt = `*PESANAN NRG FAST DELIVERY*\n--------------------------\n👤 Nama: ${name}\n📍 Alamat: ${addr}\n⏱️ Kirim: ${deliveryText}\n💳 Bayar: ${pay}\n--------------------------\n*Item:*`;
+        let txt = `*PESANAN NRG FAST DELIVERY*\n--------------------------\n👤 Nama: ${name}\n📱 WA: ${wa}\n📍 Alamat: ${addr}\n⏱️ Kirim: ${deliveryText}\n💳 Bayar: ${pay}\n--------------------------\n*Item:*`;
         cart.forEach(item => txt += `\n- ${item.name} x${item.qty}`);
         txt += `\n\n*TOTAL TAGIHAN: Rp ${total.toLocaleString()}*`;
         if(pay !== "COD") txt += `\n\n_Mohon kirimkan bukti transfer setelah ini._`;
@@ -355,7 +358,6 @@
         if(document.getElementById('admin-panel').style.display === 'block') renderOrderHistory();
     }
 
-    // --- CRUD Admin ---
     function renderAdminList() {
         document.getElementById('admin-list').innerHTML = menuData.map((m, i) => `
             <tr>
