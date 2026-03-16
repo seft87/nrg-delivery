@@ -153,9 +153,19 @@
                     </select>
                 </div>
 
-                <div class="d-flex justify-content-between fw-bold mb-3 border-top pt-2">
-                    <span>Total:</span>
-                    <span id="c-total" class="text-primary">Rp 0</span>
+                <div class="small border-top pt-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Subtotal:</span>
+                        <span id="c-subtotal">Rp 0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1 text-success">
+                        <span>Ongkos Kirim:</span>
+                        <span id="c-ongkir">Rp 0</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold mb-3 fs-5">
+                        <span>Total:</span>
+                        <span id="c-total" class="text-primary">Rp 0</span>
+                    </div>
                 </div>
                 <button class="btn btn-custom w-100 py-2 shadow-sm" onclick="processCheckout()">CHECKOUT</button>
             </div>
@@ -166,7 +176,8 @@
 <script>
     const config = {
         adminPhone: "6285281635766",
-        pass: "25051987"
+        pass: "25051987",
+        shippingFee: 5000 // Biaya pengiriman tetap
     };
 
     const DB_KEY = 'nrg_fast_delivery_v3_menu';
@@ -237,14 +248,20 @@
 
     function updateCart() {
         const list = document.getElementById('cart-list');
+        const subtotalDisp = document.getElementById('c-subtotal');
+        const ongkirDisp = document.getElementById('c-ongkir');
         const totalDisp = document.getElementById('c-total');
         const form = document.getElementById('checkout-form');
+
         if (cart.length === 0) {
             list.innerHTML = '<p class="text-muted text-center small">Keranjang kosong</p>';
+            subtotalDisp.innerText = 'Rp 0';
+            ongkirDisp.innerText = 'Rp 0';
             totalDisp.innerText = 'Rp 0';
             form.style.display = 'none';
             return;
         }
+
         form.style.display = 'block';
         list.innerHTML = cart.map((item, i) => `
             <div class="d-flex justify-content-between mb-1 small border-bottom pb-1">
@@ -252,8 +269,14 @@
                 <span>Rp ${item.price.toLocaleString()} <button class="btn btn-sm text-danger p-0" onclick="remove(${i})">×</button></span>
             </div>
         `).join('');
-        const total = cart.reduce((s, x) => s + x.price, 0);
-        totalDisp.innerText = `Rp ${total.toLocaleString()}`;
+
+        const subtotal = cart.reduce((s, x) => s + x.price, 0);
+        const ongkir = config.shippingFee;
+        const grandTotal = subtotal + ongkir;
+
+        subtotalDisp.innerText = `Rp ${subtotal.toLocaleString()}`;
+        ongkirDisp.innerText = `Rp ${ongkir.toLocaleString()}`;
+        totalDisp.innerText = `Rp ${grandTotal.toLocaleString()}`;
     }
 
     function remove(i) { cart.splice(i, 1); updateCart(); }
@@ -274,19 +297,33 @@
             deliveryText = `Pukul ${customTime}`;
         }
 
-        let txt = `*PESANAN BARU - NRG FAST DELIVERY*\n--------------------------\n👤 Nama: ${name}\n📱 No. WA: ${wa}\n📍 Alamat: ${addr}\n⏱️ Kirim: ${deliveryText}\n💳 Bayar: ${pay}\n--------------------------\n\n*Pesanan:*`;
+        const subtotal = cart.reduce((s, x) => s + x.price, 0);
+        const ongkir = config.shippingFee;
+        const total = subtotal + ongkir;
+
+        let txt = `*PESANAN BARU - NRG FAST DELIVERY*\n--------------------------\n`;
+        txt += `👤 Nama: ${name}\n`;
+        txt += `📱 No. WA: ${wa}\n`;
+        txt += `📍 Alamat: ${addr}\n`;
+        txt += `⏱️ Kirim: ${deliveryText}\n`;
+        txt += `💳 Bayar: ${pay}\n`;
+        txt += `--------------------------\n\n*Pesanan:*`;
         
-        cart.forEach((item, i) => { txt += `\n${i+1}. ${item.name} (${item.cat})`; });
+        cart.forEach((item, i) => { 
+            txt += `\n${i+1}. ${item.name} (${item.cat})`; 
+        });
         
-        const grand = cart.reduce((s, x) => s + x.price, 0);
-        txt += `\n\n*Total Tagihan: Rp ${grand.toLocaleString()}*`;
+        txt += `\n\n💰 Subtotal: Rp ${subtotal.toLocaleString()}`;
+        txt += `\n🚚 Ongkir: Rp ${ongkir.toLocaleString()}`;
+        txt += `\n*TOTAL TAGIHAN: Rp ${total.toLocaleString()}*`;
 
         if (pay !== "COD") {
             txt += `\n\n📸 *Mohon lampirkan bukti transfer.*`;
         }
 
         window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txt)}`, '_blank');
-        cart = []; updateCart();
+        cart = []; 
+        updateCart();
     }
 
     // Fungsi Admin tambahan
@@ -362,7 +399,6 @@
         renderMenu();
     }
 
-    // Inisialisasi awal
     renderFilters();
     renderMenu();
 </script>
