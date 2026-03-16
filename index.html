@@ -10,74 +10,41 @@
         body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
         .navbar { background-color: #003366; border-bottom: 4px solid #00a8e8; }
         
-        /* Category Styles */
         .category-pill { 
-            cursor: pointer; 
-            transition: 0.3s; 
-            border: 2px solid #003366; 
-            color: #003366; 
-            font-weight: 600; 
-            background: white; 
-            white-space: nowrap;
+            cursor: pointer; transition: 0.3s; border: 2px solid #003366; 
+            color: #003366; font-weight: 600; background: white; white-space: nowrap;
         }
         .category-pill.active { background-color: #003366; color: white; }
 
-        /* Card Styles */
         .menu-card { 
-            border: none; 
-            border-radius: 15px; 
-            transition: 0.3s; 
-            background: white; 
-            height: 100%; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
+            border: none; border-radius: 15px; transition: 0.3s; background: white; 
+            height: 100%; overflow: hidden; display: flex; flex-direction: column; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,51,102,0.1); }
         .menu-img { height: 140px; object-fit: cover; }
         
         .seller-info { 
-            background-color: #e6f7ff; 
-            color: #003366; 
-            font-size: 0.7rem; 
-            padding: 6px; 
-            text-align: center; 
-            font-style: italic; 
-            border-bottom: 1px solid #d1e9ff; 
-            font-weight: 500; 
+            background-color: #e6f7ff; color: #003366; font-size: 0.7rem; 
+            padding: 6px; text-align: center; font-style: italic; 
+            border-bottom: 1px solid #d1e9ff; font-weight: 500; 
         }
 
         .cart-box { background: white; border-radius: 15px; padding: 20px; position: sticky; top: 20px; border: 1px solid #d1e9ff; }
         
         .btn-custom { 
-            background-color: #00a8e8; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-weight: 600; 
-            transition: 0.3s; 
-            box-shadow: 0 4px 15px rgba(0, 168, 232, 0.3);
+            background-color: #00a8e8; color: white; border: none; border-radius: 8px; 
+            font-weight: 600; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 168, 232, 0.3);
         }
         .btn-custom:hover { background-color: #003366; color: white; }
-        .btn-custom:active { transform: scale(0.98); }
         
-        .btn-outline-nrg {
-            color: #003366;
-            border: 1px solid #003366;
-            font-weight: 600;
-        }
-        .btn-outline-nrg:hover {
-            background-color: #003366;
-            color: white;
-        }
+        .btn-outline-nrg { color: #003366; border: 1px solid #003366; font-weight: 600; }
+        .btn-outline-nrg:hover { background-color: #003366; color: white; }
 
         .admin-section { display: none; background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #003366; }
         .btn-admin-toggle { opacity: 0.3; font-size: 10px; color: white; border: none; background: none; }
         
-        .category-scroll::-webkit-scrollbar { height: 5px; }
-        .category-scroll::-webkit-scrollbar-thumb { background: #00a8e8; border-radius: 10px; }
-        
+        .rekap-container { background: #f8f9fa; border-radius: 10px; padding: 15px; margin-top: 20px; border: 1px solid #dee2e6; }
         .search-box { border-radius: 20px; border: 2px solid #d1e9ff; padding-left: 15px; }
     </style>
 </head>
@@ -95,7 +62,7 @@
         <h5 class="fw-bold mb-3 text-center text-primary">🛠️ PANEL ADMIN</h5>
         <div class="row g-2 mb-3 p-3 rounded" id="admin-form-container">
             <input type="hidden" id="edit-id">
-            <div class="col-md-3"><input type="text" id="adm-name" class="form-control form-control-sm" placeholder="Nama Menu/Barang"></div>
+            <div class="col-md-3"><input type="text" id="adm-name" class="form-control form-control-sm" placeholder="Nama Menu"></div>
             <div class="col-md-2"><input type="number" id="adm-price" class="form-control form-control-sm" placeholder="Harga"></div>
             <div class="col-md-2">
                 <select id="adm-cat" class="form-select form-select-sm">
@@ -108,25 +75,39 @@
                     <option value="Lainnya">Lainnya</option>
                 </select>
             </div>
-            <div class="col-md-3"><input type="text" id="adm-seller" class="form-control form-control-sm" placeholder="Nama Toko/Penjual"></div>
+            <div class="col-md-3"><input type="text" id="adm-seller" class="form-control form-control-sm" placeholder="Toko/Penjual"></div>
             <div class="col-md-2">
-                <button class="btn btn-success btn-sm w-100" id="btn-save" onclick="saveNewOrUpdate()">TAMBAH</button>
+                <button class="btn btn-success btn-sm w-100" id="btn-save" onclick="saveNewOrUpdate()">SIMPAN</button>
                 <button class="btn btn-secondary btn-sm w-100 mt-1" id="btn-cancel-edit" style="display:none;" onclick="cancelEdit()">BATAL</button>
             </div>
             <div class="col-12 mt-2"><input type="text" id="adm-img" class="form-control form-control-sm" placeholder="URL Gambar Produk"></div>
         </div>
-        <div class="table-responsive">
+
+        <div class="table-responsive mb-4">
             <table class="table table-sm align-middle text-center mt-2">
-                <thead class="table-dark"><tr><th>Nama</th><th>Penjual</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead>
+                <thead class="table-dark"><tr><th>Nama</th><th>Penjual</th><th>Harga</th><th>Aksi</th></tr></thead>
                 <tbody id="admin-list"></tbody>
             </table>
+        </div>
+
+        <div class="rekap-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold m-0">📋 Rekap Pesanan (Hari Ini)</h6>
+                <button class="btn btn-outline-danger btn-sm" onclick="clearHistory()">Reset Rekap Lokal</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover small">
+                    <thead class="table-primary text-center">
+                        <tr><th>Jam</th><th>Nama</th><th>Pesanan</th><th>Total</th></tr>
+                    </thead>
+                    <tbody id="order-history-list"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="d-flex gap-2 overflow-auto pb-2 justify-content-start category-scroll" id="filter-container"></div>
-        </div>
+        <div class="col-md-8 d-flex gap-2 overflow-auto pb-2" id="filter-container"></div>
         <div class="col-md-4">
             <input type="text" id="search-input" class="form-control search-box" placeholder="Cari produk..." onkeyup="searchMenu()">
         </div>
@@ -140,7 +121,7 @@
         <div class="col-lg-4">
             <div class="cart-box shadow-sm border-top border-4 border-primary">
                 <h6 class="fw-bold mb-3 border-bottom pb-2">📦 Detail Pesanan</h6>
-                <div id="cart-list" class="mb-3"><p class="text-muted text-center small">Keranjang kosong</p></div>
+                <div id="cart-list" class="mb-3"></div>
                 
                 <div id="checkout-form" style="display: none;">
                     <hr>
@@ -152,7 +133,6 @@
                     <select id="c-delivery" class="form-select form-select-sm mb-2" onchange="toggleCustomTime()">
                         <option value="Segera (5-15 menit)">Segera (5-15 menit)</option>
                         <option value="Biasa (30-60 menit)">Biasa (30-60 menit)</option>
-                        <option value="Lama (60-120 menit)">Lama (60-120 menit)</option>
                         <option value="Lainnya">Lainnya : pada pukul...</option>
                     </select>
                     <input type="time" id="c-time" class="form-control form-control-sm mb-2" style="display: none;">
@@ -166,20 +146,11 @@
                 </div>
 
                 <div class="small border-top pt-2">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>Subtotal:</span>
-                        <span id="c-subtotal">Rp 0</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-1 text-success">
-                        <span>Ongkos Kirim:</span>
-                        <span id="c-ongkir">Rp 0</span>
-                    </div>
-                    <div class="d-flex justify-content-between fw-bold mb-3 fs-5">
-                        <span>Total:</span>
-                        <span id="c-total" class="text-primary">Rp 0</span>
-                    </div>
+                    <div class="d-flex justify-content-between mb-1"><span>Subtotal:</span><span id="c-subtotal">Rp 0</span></div>
+                    <div class="d-flex justify-content-between mb-1 text-success"><span>Ongkir:</span><span>Rp 5.000</span></div>
+                    <div class="d-flex justify-content-between fw-bold mb-3 fs-5 text-primary"><span>Total:</span><span id="c-total">Rp 0</span></div>
                 </div>
-                <button class="btn btn-custom w-100 py-2 shadow-sm" onclick="processCheckout()">CHECKOUT</button>
+                <button class="btn btn-custom w-100 py-2 shadow-sm" onclick="processCheckout()">CHECKOUT KE WA</button>
             </div>
         </div>
     </div>
@@ -189,251 +160,96 @@
     const config = {
         adminPhone: "6285281635766",
         pass: "25051987",
-        shippingFee: 5000
+        shippingFee: 5000,
+        scriptURL: 'TEMPEL_URL_WEB_APP_ANDA_DISINI' // <-- GANTI DENGAN URL GOOGLE SCRIPT ANDA
     };
 
     const DB_KEY = 'nrg_fast_delivery_v3_menu';
+    const LOG_KEY = 'nrg_order_history_v3';
     const categories = ["Semua", "Makanan", "Minuman", "Snack", "Sembako", "ATK", "Kesehatan", "Lainnya"];
 
-    let menuData = JSON.parse(localStorage.getItem(DB_KEY)) || [
-        { id: 1, name: "Nasi Goreng Spesial", price: 25000, cat: "Makanan", seller: "Kampung Turis Food", img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400" },
-        { id: 2, name: "Minyak Goreng 1L", price: 18000, cat: "Sembako", seller: "Toko Berkah", img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400" }
-    ];
-
+    let menuData = JSON.parse(localStorage.getItem(DB_KEY)) || [];
     let cart = [];
     let currentFilter = "Semua";
     let isEditing = false;
 
-    // --- Core Functions ---
+    // --- Inisialisasi ---
+    function init() {
+        renderFilters();
+        renderMenu();
+        updateCart();
+    }
 
+    // --- Admin & Rekap ---
     function toggleAdmin() {
         const panel = document.getElementById('admin-panel');
         if (panel.style.display === 'none' || panel.style.display === '') {
             if (prompt("Password Admin:") === config.pass) {
                 panel.style.display = 'block';
                 renderAdminList();
+                renderOrderHistory();
             } else { alert("Akses Ditolak!"); }
         } else { panel.style.display = 'none'; cancelEdit(); }
     }
 
+    function renderOrderHistory() {
+        const history = JSON.parse(localStorage.getItem(LOG_KEY)) || [];
+        const today = new Date().toLocaleDateString('id-ID');
+        const container = document.getElementById('order-history-list');
+        const todayOrders = history.filter(o => o.date === today);
+
+        if (todayOrders.length === 0) {
+            container.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Belum ada pesanan hari ini.</td></tr>';
+            return;
+        }
+
+        container.innerHTML = todayOrders.map(o => `
+            <tr>
+                <td class="text-center">${o.time}</td>
+                <td class="fw-bold">${o.customer}</td>
+                <td style="font-size:0.7rem">${o.items}</td>
+                <td class="text-end fw-bold">Rp ${o.total.toLocaleString()}</td>
+            </tr>
+        `).reverse().join('');
+    }
+
+    function clearHistory() {
+        if(confirm("Hapus rekap lokal? (Data di Google Sheets tetap aman)")) {
+            localStorage.removeItem(LOG_KEY);
+            renderOrderHistory();
+        }
+    }
+
+    // --- Menu & Filter ---
     function renderFilters() {
-        const container = document.getElementById('filter-container');
-        container.innerHTML = categories.map(cat => `
+        document.getElementById('filter-container').innerHTML = categories.map(cat => `
             <div class="badge rounded-pill category-pill px-4 py-2 ${currentFilter === cat ? 'active' : ''}" 
                  onclick="filterMenu('${cat}', this)">${cat}</div>
         `).join('');
     }
 
-    function renderMenu(dataToRender = menuData) {
+    function renderMenu(data = menuData) {
         const container = document.getElementById('menu-container');
-        const filtered = currentFilter === "Semua" ? dataToRender : dataToRender.filter(m => m.cat === currentFilter);
+        const filtered = currentFilter === "Semua" ? data : data.filter(m => m.cat === currentFilter);
         
         if(filtered.length === 0) {
-            container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Barang tidak ditemukan.</div>';
+            container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Produk kosong.</div>';
             return;
         }
 
         container.innerHTML = filtered.map(item => `
             <div class="col-6 col-md-4">
                 <div class="card menu-card">
-                    <img src="${item.img}" class="card-img-top menu-img">
+                    <img src="${item.img || 'https://via.placeholder.com/150'}" class="card-img-top menu-img">
                     <div class="seller-info">by ${item.seller}</div>
                     <div class="card-body p-2 text-center">
-                        <div class="badge bg-light text-muted mb-1" style="font-size: 0.6rem;">${item.cat}</div>
-                        <h6 class="fw-bold mb-1 small text-dark">${item.name}</h6>
+                        <h6 class="fw-bold mb-1 small">${item.name}</h6>
                         <p class="text-primary fw-bold small mb-2">Rp ${item.price.toLocaleString()}</p>
                         <button class="btn btn-sm btn-outline-nrg w-100" onclick="addToCart(${item.id})">Beli</button>
                     </div>
                 </div>
             </div>
         `).join('');
-    }
-
-    function searchMenu() {
-        const keyword = document.getElementById('search-input').value.toLowerCase();
-        const searchResult = menuData.filter(item => 
-            item.name.toLowerCase().includes(keyword) || 
-            item.seller.toLowerCase().includes(keyword)
-        );
-        renderMenu(searchResult);
-    }
-
-    // --- Cart Functions ---
-
-    function addToCart(id) {
-        const item = menuData.find(x => x.id === id);
-        const cartItem = cart.find(x => x.id === id);
-        
-        if (cartItem) {
-            cartItem.qty += 1;
-        } else {
-            cart.push({ ...item, qty: 1 });
-        }
-        updateCart();
-    }
-
-    function updateCart() {
-        const list = document.getElementById('cart-list');
-        const form = document.getElementById('checkout-form');
-        const subtotalDisp = document.getElementById('c-subtotal');
-        const totalDisp = document.getElementById('c-total');
-        const ongkirDisp = document.getElementById('c-ongkir');
-
-        if (cart.length === 0) {
-            list.innerHTML = '<p class="text-muted text-center small">Keranjang kosong</p>';
-            subtotalDisp.innerText = 'Rp 0';
-            totalDisp.innerText = 'Rp 0';
-            ongkirDisp.innerText = 'Rp 0';
-            form.style.display = 'none';
-            return;
-        }
-
-        form.style.display = 'block';
-        list.innerHTML = cart.map((item) => `
-            <div class="d-flex justify-content-between align-items-center mb-2 small border-bottom pb-1">
-                <div style="flex: 1;">
-                    <div class="fw-bold" style="font-size: 0.8rem;">${item.name}</div>
-                    <div class="text-muted" style="font-size: 0.7rem;">${item.qty} x Rp ${item.price.toLocaleString()}</div>
-                </div>
-                <div class="d-flex align-items-center">
-                    <span class="fw-bold me-2">Rp ${(item.qty * item.price).toLocaleString()}</span>
-                    <button class="btn btn-sm text-danger p-0 fw-bold" onclick="removeFromCart(${item.id})">×</button>
-                </div>
-            </div>
-        `).join('');
-
-        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
-        const ongkir = config.shippingFee;
-        const grandTotal = subtotal + ongkir;
-
-        subtotalDisp.innerText = `Rp ${subtotal.toLocaleString()}`;
-        ongkirDisp.innerText = `Rp ${ongkir.toLocaleString()}`;
-        totalDisp.innerText = `Rp ${grandTotal.toLocaleString()}`;
-    }
-
-    function removeFromCart(id) {
-        cart = cart.filter(item => item.id !== id);
-        updateCart();
-    }
-
-    function toggleCustomTime() {
-        const delivery = document.getElementById('c-delivery').value;
-        const timeInput = document.getElementById('c-time');
-        timeInput.style.display = (delivery === "Lainnya") ? "block" : "none";
-    }
-
-    function processCheckout() {
-        const name = document.getElementById('c-name').value;
-        const waInput = document.getElementById('c-wa').value;
-        const addr = document.getElementById('c-address').value;
-        const pay = document.getElementById('c-payment').value;
-        const delivery = document.getElementById('c-delivery').value;
-        const customTime = document.getElementById('c-time').value;
-
-        if (!name || !waInput || !addr) return alert("Harap lengkapi detail pengiriman!");
-
-        // Format WA agar selalu diawali 62
-        let waFormatted = waInput.replace(/\D/g, '');
-        if (waFormatted.startsWith('0')) waFormatted = '62' + waFormatted.substring(1);
-
-        let deliveryText = delivery;
-        if (delivery === "Lainnya") {
-            if (!customTime) return alert("Harap isi jam pengiriman!");
-            deliveryText = `Pukul ${customTime}`;
-        }
-
-        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
-        const total = subtotal + config.shippingFee;
-
-        let txt = `*PESANAN BARU - NRG FAST DELIVERY*\n--------------------------\n`;
-        txt += `👤 Nama: ${name}\n`;
-        txt += `📱 No. WA: ${waFormatted}\n`;
-        txt += `📍 Alamat: ${addr}\n`;
-        txt += `⏱️ Kirim: ${deliveryText}\n`;
-        txt += `💳 Bayar: ${pay}\n`;
-        txt += `--------------------------\n\n*Pesanan:*`;
-        
-        cart.forEach((item, i) => { 
-            txt += `\n${i+1}. ${item.name} x${item.qty}`; 
-        });
-        
-        txt += `\n\n💰 Subtotal: Rp ${subtotal.toLocaleString()}`;
-        txt += `\n🚚 Ongkir: Rp ${config.shippingFee.toLocaleString()}`;
-        txt += `\n*TOTAL TAGIHAN: Rp ${total.toLocaleString()}*`;
-
-        if (pay !== "COD") txt += `\n\n📸 *Mohon lampirkan bukti transfer.*`;
-
-        window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txt)}`, '_blank');
-        cart = []; 
-        updateCart();
-    }
-
-    // --- Admin Side Functions ---
-
-    function renderAdminList() {
-        const list = document.getElementById('admin-list');
-        list.innerHTML = menuData.map((item, index) => `
-            <tr>
-                <td class="small text-start">${item.name}</td>
-                <td class="small">${item.seller}</td>
-                <td class="small"><span class="badge bg-secondary">${item.cat}</span></td>
-                <td class="small">Rp ${item.price.toLocaleString()}</td>
-                <td>
-                    <button class="btn btn-outline-primary btn-sm px-2" onclick="startEdit(${index})">Edit</button>
-                    <button class="btn btn-danger btn-sm px-2" onclick="deleteMenu(${index})">×</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function saveNewOrUpdate() {
-        const name = document.getElementById('adm-name').value;
-        const price = parseInt(document.getElementById('adm-price').value);
-        const cat = document.getElementById('adm-cat').value;
-        const seller = document.getElementById('adm-seller').value || "Penjual Umum";
-        const img = document.getElementById('adm-img').value || "https://via.placeholder.com/150";
-
-        if (!name || !price) return alert("Lengkapi data!");
-
-        if (isEditing) {
-            const index = document.getElementById('edit-id').value;
-            menuData[index] = { ...menuData[index], name, price, cat, seller, img };
-        } else {
-            menuData.push({ id: Date.now(), name, price, cat, seller, img });
-        }
-        saveData();
-        cancelEdit();
-    }
-
-    function startEdit(index) {
-        isEditing = true;
-        const item = menuData[index];
-        document.getElementById('edit-id').value = index;
-        document.getElementById('adm-name').value = item.name;
-        document.getElementById('adm-price').value = item.price;
-        document.getElementById('adm-cat').value = item.cat;
-        document.getElementById('adm-seller').value = item.seller;
-        document.getElementById('adm-img').value = item.img;
-        document.getElementById('btn-save').innerText = "UPDATE";
-        document.getElementById('btn-cancel-edit').style.display = "block";
-        document.getElementById('admin-form-container').scrollIntoView();
-    }
-
-    function cancelEdit() {
-        isEditing = false;
-        document.getElementById('adm-name').value = "";
-        document.getElementById('adm-price').value = "";
-        document.getElementById('btn-save').innerText = "TAMBAH";
-        document.getElementById('btn-cancel-edit').style.display = "none";
-    }
-
-    function deleteMenu(index) {
-        if(confirm("Hapus item?")) { menuData.splice(index, 1); saveData(); }
-    }
-
-    function saveData() {
-        localStorage.setItem(DB_KEY, JSON.stringify(menuData));
-        renderMenu(); renderAdminList();
     }
 
     function filterMenu(cat, el) {
@@ -443,9 +259,168 @@
         renderMenu();
     }
 
-    // Initialize
-    renderFilters();
-    renderMenu();
+    function searchMenu() {
+        const key = document.getElementById('search-input').value.toLowerCase();
+        renderMenu(menuData.filter(m => m.name.toLowerCase().includes(key) || m.seller.toLowerCase().includes(key)));
+    }
+
+    // --- Keranjang ---
+    function addToCart(id) {
+        const item = menuData.find(x => x.id === id);
+        const cartItem = cart.find(x => x.id === id);
+        if (cartItem) { cartItem.qty += 1; } else { cart.push({ ...item, qty: 1 }); }
+        updateCart();
+    }
+
+    function updateCart() {
+        const list = document.getElementById('cart-list');
+        const subtotalDisp = document.getElementById('c-subtotal');
+        const totalDisp = document.getElementById('c-total');
+        
+        if (cart.length === 0) {
+            list.innerHTML = '<p class="text-muted text-center small">Keranjang kosong</p>';
+            subtotalDisp.innerText = 'Rp 0';
+            totalDisp.innerText = 'Rp 0';
+            document.getElementById('checkout-form').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('checkout-form').style.display = 'block';
+        list.innerHTML = cart.map((item, i) => `
+            <div class="d-flex justify-content-between mb-2 small border-bottom pb-1">
+                <span>${item.name} (x${item.qty})</span>
+                <span>Rp ${(item.price * item.qty).toLocaleString()} 
+                <button class="btn btn-sm text-danger p-0" onclick="cart.splice(${i},1);updateCart();">×</button></span>
+            </div>
+        `).join('');
+
+        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
+        subtotalDisp.innerText = `Rp ${subtotal.toLocaleString()}`;
+        totalDisp.innerText = `Rp ${(subtotal + config.shippingFee).toLocaleString()}`;
+    }
+
+    function toggleCustomTime() {
+        document.getElementById('c-time').style.display = (document.getElementById('c-delivery').value === "Lainnya") ? "block" : "none";
+    }
+
+    // --- PROSES CHECKOUT (GABUNGAN) ---
+    async function processCheckout() {
+        const name = document.getElementById('c-name').value;
+        const wa = document.getElementById('c-wa').value;
+        const addr = document.getElementById('c-address').value;
+        const pay = document.getElementById('c-payment').value;
+        const delivery = document.getElementById('c-delivery').value;
+        const customTime = document.getElementById('c-time').value;
+
+        if (!name || !wa || !addr) return alert("Mohon lengkapi data!");
+
+        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
+        const total = subtotal + config.shippingFee;
+        const itemsText = cart.map(item => `${item.name} x${item.qty}`).join(', ');
+
+        let deliveryText = delivery === "Lainnya" ? `Pukul ${customTime}` : delivery;
+
+        const orderData = {
+            date: new Date().toLocaleDateString('id-ID'),
+            time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
+            customer: name,
+            items: itemsText,
+            total: total
+        };
+
+        // 1. SIMPAN LOKAL
+        const history = JSON.parse(localStorage.getItem(LOG_KEY)) || [];
+        history.push(orderData);
+        localStorage.setItem(LOG_KEY, JSON.stringify(history));
+
+        // 2. KIRIM GOOGLE SHEETS
+        if(config.scriptURL !== 'https://script.google.com/macros/s/AKfycbx5z_gwIFRxOb3sLmE-1Yr_k0zx_4Tlq2S8ZEY_3mjbaRL4vCTeO_XhpPpkHGL0PLVF/exec') {
+            fetch(config.scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(orderData)
+            }).catch(e => console.log("Sheets Error"));
+        }
+
+        // 3. KIRIM WHATSAPP
+        let txt = `*PESANAN NRG FAST DELIVERY*\n--------------------------\n👤 Nama: ${name}\n📍 Alamat: ${addr}\n⏱️ Kirim: ${deliveryText}\n💳 Bayar: ${pay}\n--------------------------\n*Item:*`;
+        cart.forEach(item => txt += `\n- ${item.name} x${item.qty}`);
+        txt += `\n\n*TOTAL TAGIHAN: Rp ${total.toLocaleString()}*`;
+        if(pay !== "COD") txt += `\n\n_Mohon kirimkan bukti transfer setelah ini._`;
+
+        window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txt)}`, '_blank');
+        
+        cart = []; 
+        updateCart();
+        if(document.getElementById('admin-panel').style.display === 'block') renderOrderHistory();
+    }
+
+    // --- CRUD Admin ---
+    function renderAdminList() {
+        document.getElementById('admin-list').innerHTML = menuData.map((m, i) => `
+            <tr>
+                <td class="small text-start">${m.name}</td>
+                <td class="small">${m.seller}</td>
+                <td class="small">Rp ${m.price.toLocaleString()}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="startEdit(${i})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteMenu(${i})">×</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function saveNewOrUpdate() {
+        const name = document.getElementById('adm-name').value;
+        const price = parseInt(document.getElementById('adm-price').value);
+        const cat = document.getElementById('adm-cat').value;
+        const seller = document.getElementById('adm-seller').value || "Umum";
+        const img = document.getElementById('adm-img').value || "https://via.placeholder.com/150";
+
+        if (!name || !price) return alert("Lengkapi nama & harga!");
+
+        if (isEditing) {
+            const index = document.getElementById('edit-id').value;
+            menuData[index] = { ...menuData[index], name, price, cat, seller, img };
+        } else {
+            menuData.push({ id: Date.now(), name, price, cat, seller, img });
+        }
+        
+        saveData();
+        cancelEdit();
+    }
+
+    function startEdit(i) {
+        isEditing = true;
+        const item = menuData[i];
+        document.getElementById('edit-id').value = i;
+        document.getElementById('adm-name').value = item.name;
+        document.getElementById('adm-price').value = item.price;
+        document.getElementById('adm-cat').value = item.cat;
+        document.getElementById('adm-seller').value = item.seller;
+        document.getElementById('adm-img').value = item.img;
+        document.getElementById('btn-save').innerText = "UPDATE";
+        document.getElementById('btn-cancel-edit').style.display = "block";
+    }
+
+    function cancelEdit() {
+        isEditing = false;
+        document.getElementById('adm-name').value = "";
+        document.getElementById('adm-price').value = "";
+        document.getElementById('btn-save').innerText = "SIMPAN";
+        document.getElementById('btn-cancel-edit').style.display = "none";
+    }
+
+    function deleteMenu(i) {
+        if(confirm("Hapus produk?")) { menuData.splice(i, 1); saveData(); }
+    }
+
+    function saveData() {
+        localStorage.setItem(DB_KEY, JSON.stringify(menuData));
+        renderMenu(); renderAdminList();
+    }
+
+    init();
 </script>
 </body>
 </html>
