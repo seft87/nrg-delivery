@@ -10,6 +10,7 @@
         body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
         .navbar { background-color: #003366; border-bottom: 4px solid #00a8e8; }
         
+        /* Category Styles */
         .category-pill { 
             cursor: pointer; 
             transition: 0.3s; 
@@ -21,6 +22,7 @@
         }
         .category-pill.active { background-color: #003366; color: white; }
 
+        /* Card Styles */
         .menu-card { 
             border: none; 
             border-radius: 15px; 
@@ -55,8 +57,10 @@
             border-radius: 8px; 
             font-weight: 600; 
             transition: 0.3s; 
+            box-shadow: 0 4px 15px rgba(0, 168, 232, 0.3);
         }
         .btn-custom:hover { background-color: #003366; color: white; }
+        .btn-custom:active { transform: scale(0.98); }
         
         .btn-outline-nrg {
             color: #003366;
@@ -70,10 +74,11 @@
 
         .admin-section { display: none; background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #003366; }
         .btn-admin-toggle { opacity: 0.3; font-size: 10px; color: white; border: none; background: none; }
-        .edit-mode { background-color: #fffde7 !important; border: 2px solid #ffd600 !important; }
         
         .category-scroll::-webkit-scrollbar { height: 5px; }
         .category-scroll::-webkit-scrollbar-thumb { background: #00a8e8; border-radius: 10px; }
+        
+        .search-box { border-radius: 20px; border: 2px solid #d1e9ff; padding-left: 15px; }
     </style>
 </head>
 <body>
@@ -118,7 +123,14 @@
         </div>
     </div>
 
-    <div class="d-flex gap-2 mb-4 overflow-auto pb-2 justify-content-start category-scroll" id="filter-container"></div>
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex gap-2 overflow-auto pb-2 justify-content-start category-scroll" id="filter-container"></div>
+        </div>
+        <div class="col-md-4">
+            <input type="text" id="search-input" class="form-control search-box" placeholder="Cari produk..." onkeyup="searchMenu()">
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-lg-8">
@@ -177,7 +189,7 @@
     const config = {
         adminPhone: "6285281635766",
         pass: "25051987",
-        shippingFee: 5000 // Biaya pengiriman tetap
+        shippingFee: 5000
     };
 
     const DB_KEY = 'nrg_fast_delivery_v3_menu';
@@ -192,6 +204,8 @@
     let currentFilter = "Semua";
     let isEditing = false;
 
+    // --- Core Functions ---
+
     function toggleAdmin() {
         const panel = document.getElementById('admin-panel');
         if (panel.style.display === 'none' || panel.style.display === '') {
@@ -202,12 +216,6 @@
         } else { panel.style.display = 'none'; cancelEdit(); }
     }
 
-    function toggleCustomTime() {
-        const delivery = document.getElementById('c-delivery').value;
-        const timeInput = document.getElementById('c-time');
-        timeInput.style.display = (delivery === "Lainnya") ? "block" : "none";
-    }
-
     function renderFilters() {
         const container = document.getElementById('filter-container');
         container.innerHTML = categories.map(cat => `
@@ -216,12 +224,12 @@
         `).join('');
     }
 
-    function renderMenu() {
+    function renderMenu(dataToRender = menuData) {
         const container = document.getElementById('menu-container');
-        const filtered = currentFilter === "Semua" ? menuData : menuData.filter(m => m.cat === currentFilter);
+        const filtered = currentFilter === "Semua" ? dataToRender : dataToRender.filter(m => m.cat === currentFilter);
         
         if(filtered.length === 0) {
-            container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Belum ada barang di kategori ini.</div>';
+            container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Barang tidak ditemukan.</div>';
             return;
         }
 
@@ -241,36 +249,60 @@
         `).join('');
     }
 
+    function searchMenu() {
+        const keyword = document.getElementById('search-input').value.toLowerCase();
+        const searchResult = menuData.filter(item => 
+            item.name.toLowerCase().includes(keyword) || 
+            item.seller.toLowerCase().includes(keyword)
+        );
+        renderMenu(searchResult);
+    }
+
+    // --- Cart Functions ---
+
     function addToCart(id) {
-        cart.push(menuData.find(x => x.id === id));
+        const item = menuData.find(x => x.id === id);
+        const cartItem = cart.find(x => x.id === id);
+        
+        if (cartItem) {
+            cartItem.qty += 1;
+        } else {
+            cart.push({ ...item, qty: 1 });
+        }
         updateCart();
     }
 
     function updateCart() {
         const list = document.getElementById('cart-list');
-        const subtotalDisp = document.getElementById('c-subtotal');
-        const ongkirDisp = document.getElementById('c-ongkir');
-        const totalDisp = document.getElementById('c-total');
         const form = document.getElementById('checkout-form');
+        const subtotalDisp = document.getElementById('c-subtotal');
+        const totalDisp = document.getElementById('c-total');
+        const ongkirDisp = document.getElementById('c-ongkir');
 
         if (cart.length === 0) {
             list.innerHTML = '<p class="text-muted text-center small">Keranjang kosong</p>';
             subtotalDisp.innerText = 'Rp 0';
-            ongkirDisp.innerText = 'Rp 0';
             totalDisp.innerText = 'Rp 0';
+            ongkirDisp.innerText = 'Rp 0';
             form.style.display = 'none';
             return;
         }
 
         form.style.display = 'block';
-        list.innerHTML = cart.map((item, i) => `
-            <div class="d-flex justify-content-between mb-1 small border-bottom pb-1">
-                <span>${item.name}</span>
-                <span>Rp ${item.price.toLocaleString()} <button class="btn btn-sm text-danger p-0" onclick="remove(${i})">×</button></span>
+        list.innerHTML = cart.map((item) => `
+            <div class="d-flex justify-content-between align-items-center mb-2 small border-bottom pb-1">
+                <div style="flex: 1;">
+                    <div class="fw-bold" style="font-size: 0.8rem;">${item.name}</div>
+                    <div class="text-muted" style="font-size: 0.7rem;">${item.qty} x Rp ${item.price.toLocaleString()}</div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="fw-bold me-2">Rp ${(item.qty * item.price).toLocaleString()}</span>
+                    <button class="btn btn-sm text-danger p-0 fw-bold" onclick="removeFromCart(${item.id})">×</button>
+                </div>
             </div>
         `).join('');
 
-        const subtotal = cart.reduce((s, x) => s + x.price, 0);
+        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
         const ongkir = config.shippingFee;
         const grandTotal = subtotal + ongkir;
 
@@ -279,17 +311,30 @@
         totalDisp.innerText = `Rp ${grandTotal.toLocaleString()}`;
     }
 
-    function remove(i) { cart.splice(i, 1); updateCart(); }
+    function removeFromCart(id) {
+        cart = cart.filter(item => item.id !== id);
+        updateCart();
+    }
+
+    function toggleCustomTime() {
+        const delivery = document.getElementById('c-delivery').value;
+        const timeInput = document.getElementById('c-time');
+        timeInput.style.display = (delivery === "Lainnya") ? "block" : "none";
+    }
 
     function processCheckout() {
         const name = document.getElementById('c-name').value;
-        const wa = document.getElementById('c-wa').value;
+        const waInput = document.getElementById('c-wa').value;
         const addr = document.getElementById('c-address').value;
         const pay = document.getElementById('c-payment').value;
         const delivery = document.getElementById('c-delivery').value;
         const customTime = document.getElementById('c-time').value;
 
-        if (!name || !wa || !addr) return alert("Harap lengkapi detail pengiriman!");
+        if (!name || !waInput || !addr) return alert("Harap lengkapi detail pengiriman!");
+
+        // Format WA agar selalu diawali 62
+        let waFormatted = waInput.replace(/\D/g, '');
+        if (waFormatted.startsWith('0')) waFormatted = '62' + waFormatted.substring(1);
 
         let deliveryText = delivery;
         if (delivery === "Lainnya") {
@@ -297,36 +342,34 @@
             deliveryText = `Pukul ${customTime}`;
         }
 
-        const subtotal = cart.reduce((s, x) => s + x.price, 0);
-        const ongkir = config.shippingFee;
-        const total = subtotal + ongkir;
+        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
+        const total = subtotal + config.shippingFee;
 
         let txt = `*PESANAN BARU - NRG FAST DELIVERY*\n--------------------------\n`;
         txt += `👤 Nama: ${name}\n`;
-        txt += `📱 No. WA: ${wa}\n`;
+        txt += `📱 No. WA: ${waFormatted}\n`;
         txt += `📍 Alamat: ${addr}\n`;
         txt += `⏱️ Kirim: ${deliveryText}\n`;
         txt += `💳 Bayar: ${pay}\n`;
         txt += `--------------------------\n\n*Pesanan:*`;
         
         cart.forEach((item, i) => { 
-            txt += `\n${i+1}. ${item.name} (${item.cat})`; 
+            txt += `\n${i+1}. ${item.name} x${item.qty}`; 
         });
         
         txt += `\n\n💰 Subtotal: Rp ${subtotal.toLocaleString()}`;
-        txt += `\n🚚 Ongkir: Rp ${ongkir.toLocaleString()}`;
+        txt += `\n🚚 Ongkir: Rp ${config.shippingFee.toLocaleString()}`;
         txt += `\n*TOTAL TAGIHAN: Rp ${total.toLocaleString()}*`;
 
-        if (pay !== "COD") {
-            txt += `\n\n📸 *Mohon lampirkan bukti transfer.*`;
-        }
+        if (pay !== "COD") txt += `\n\n📸 *Mohon lampirkan bukti transfer.*`;
 
         window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txt)}`, '_blank');
         cart = []; 
         updateCart();
     }
 
-    // Fungsi Admin tambahan
+    // --- Admin Side Functions ---
+
     function renderAdminList() {
         const list = document.getElementById('admin-list');
         list.innerHTML = menuData.map((item, index) => `
@@ -373,6 +416,7 @@
         document.getElementById('adm-img').value = item.img;
         document.getElementById('btn-save').innerText = "UPDATE";
         document.getElementById('btn-cancel-edit').style.display = "block";
+        document.getElementById('admin-form-container').scrollIntoView();
     }
 
     function cancelEdit() {
@@ -399,6 +443,7 @@
         renderMenu();
     }
 
+    // Initialize
     renderFilters();
     renderMenu();
 </script>
