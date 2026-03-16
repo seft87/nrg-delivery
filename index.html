@@ -49,7 +49,7 @@
     <div class="promo-banner d-flex align-items-center justify-content-between">
         <div>
             <h4 class="fw-bold mb-1">Database Cloud Aktif 🌐</h4>
-            <p class="mb-0 opacity-75">Menu tersinkronisasi otomatis di semua perangkat.</p>
+            <p class="mb-0 opacity-75">Sistem Pemesanan Real-Time NRG.</p>
         </div>
     </div>
 
@@ -87,13 +87,29 @@
                 <div id="cart-list" class="mb-3"></div>
                 
                 <div id="checkout-form" style="display: none;">
+                    <label class="small fw-bold mb-1">Data Penerima:</label>
                     <input type="text" id="c-name" class="form-control form-control-sm mb-2" placeholder="Nama Anda">
-                    <input type="number" id="c-wa" class="form-control form-control-sm mb-2" placeholder="No WhatsApp">
-                    <textarea id="c-address" class="form-control form-control-sm mb-2" placeholder="Alamat"></textarea>
+                    <input type="number" id="c-wa" class="form-control form-control-sm mb-2" placeholder="No WhatsApp (Contoh: 0812...)">
+                    <textarea id="c-address" class="form-control form-control-sm mb-2" placeholder="Alamat Lengkap"></textarea>
+                    
+                    <label class="small fw-bold mb-1">Estimasi Waktu Kirim:</label>
+                    <select id="c-delivery" class="form-select form-select-sm mb-2" onchange="toggleCustomTime()">
+                        <option value="Segera (5-15 menit)">Segera (5-15 menit)</option>
+                        <option value="Biasa (30-60 menit)">Biasa (30-60 menit)</option>
+                        <option value="Lainnya">Lainnya : pada pukul...</option>
+                    </select>
+                    <input type="time" id="c-time" class="form-control form-control-sm mb-2" style="display: none;">
                 </div>
 
                 <div class="small border-top pt-2">
-                    <div class="d-flex justify-content-between fw-bold mb-3 fs-5 text-primary"><span>Total:</span><span id="c-total">Rp 0</span></div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Ongkir:</span>
+                        <span id="c-shipping">Rp 5.000</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold mb-3 fs-5 text-primary">
+                        <span>Total:</span>
+                        <span id="c-total">Rp 0</span>
+                    </div>
                 </div>
                 <button class="btn btn-primary w-100 py-2" onclick="processCheckout()">KIRIM PESANAN</button>
             </div>
@@ -102,12 +118,11 @@
 </div>
 
 <script>
-    // --- KONFIGURASI PENTING ---
     const config = {
         adminPhone: "6285281635766",
         pass: "25051987",
         shippingFee: 5000,
-        scriptURL: 'https://script.google.com/macros/s/AKfycbyMUaZWMGc5L63RCjaXnWW1HYRiVHWS_NCHk37Z3c6b_C94hKe9qE5XXHaj99w2IGTU/exec' // <--- GANTI INI
+        scriptURL: 'https://script.google.com/macros/s/AKfycbyMUaZWMGc5L63RCjaXnWW1HYRiVHWS_NCHk37Z3c6b_C94hKe9qE5XXHaj99w2IGTU/exec'
     };
 
     let menuData = [];
@@ -123,9 +138,15 @@
             menuData = await res.json();
             renderMenu();
         } catch (e) {
-            alert("Gagal memuat data dari Cloud. Pastikan ScriptURL benar.");
+            alert("Gagal memuat data dari Cloud.");
         }
         showLoading(false);
+    }
+
+    function toggleCustomTime() {
+        const deliverySelect = document.getElementById('c-delivery').value;
+        const timeInput = document.getElementById('c-time');
+        timeInput.style.display = (deliverySelect === "Lainnya") ? "block" : "none";
     }
 
     function renderFilters() {
@@ -138,7 +159,6 @@
     function renderMenu() {
         const container = document.getElementById('menu-container');
         const filtered = currentFilter === "Semua" ? menuData : menuData.filter(m => m.cat === currentFilter);
-        
         container.innerHTML = filtered.map(item => `
             <div class="col-6 col-md-4">
                 <div class="card menu-card">
@@ -160,19 +180,11 @@
         const cat = document.getElementById('adm-cat').value;
         const seller = document.getElementById('adm-seller').value;
         const img = document.getElementById('adm-img').value;
-
         if(!name || !price) return alert("Lengkapi data!");
-
         showLoading(true);
         const payload = { action: "saveMenu", name, price, cat, seller, img };
-
-        await fetch(config.scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify(payload)
-        });
-
-        alert("Data terkirim ke Google Sheets! Halaman akan dimuat ulang.");
+        await fetch(config.scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        alert("Data terkirim! Halaman akan dimuat ulang.");
         location.reload();
     }
 
@@ -205,13 +217,70 @@
 
     function processCheckout() {
         const name = document.getElementById('c-name').value;
-        const wa = document.getElementById('c-wa').value;
-        if(!name || !wa) return alert("Isi data penerima!");
+        let wa = document.getElementById('c-wa').value;
+        const addr = document.getElementById('c-address').value;
+        const delivery = document.getElementById('c-delivery').value;
+        const customTime = document.getElementById('c-time').value;
+
+        if(!name || !wa || !addr) return alert("Mohon lengkapi data penerima!");
+
+        // Normalisasi nomor WA Pelanggan (Ganti 08 ke 628)
+        if (wa.startsWith("0")) {
+            wa = "62" + wa.substring(1);
+        }
         
-        let txt = `*PESANAN BARU NRG*\nNama: ${name}\nWA: ${wa}\n\n*Daftar:*`;
-        cart.forEach(item => txt += `\n- ${item.name} x${item.qty}`);
+        const sekarang = new Date();
+        const opsiWaktu = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        };
+        const formatWaktu = sekarang.toLocaleDateString('id-ID', opsiWaktu);
+
+        let deliveryText = (delivery === "Lainnya") ? `Pukul ${customTime}` : delivery;
+        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
+        const total = subtotal + config.shippingFee;
+
+        // --- TEKS UNTUK ADMIN ---
+        let txtAdmin = `*PESANAN BARU NRG*\n`;
+        txtAdmin += `--------------------------\n`;
+        txtAdmin += `📅 *Waktu:* ${formatWaktu}\n`;
+        txtAdmin += `👤 *Nama:* ${name}\n`;
+        txtAdmin += `📍 *Alamat:* ${addr}\n`;
+        txtAdmin += `📱 *WA:* ${wa}\n`;
+        txtAdmin += `⏱️ *Estimasi:* ${deliveryText}\n`;
+        txtAdmin += `--------------------------\n`;
+        txtAdmin += `*Daftar Belanja:*`;
+        cart.forEach(item => txtAdmin += `\n- ${item.name} x${item.qty}`);
+        txtAdmin += `\n\n💰 *Subtotal:* Rp ${subtotal.toLocaleString()}`;
+        txtAdmin += `\n🚚 *Ongkir:* Rp ${config.shippingFee.toLocaleString()}`;
+        txtAdmin += `\n\n*TOTAL TAGIHAN: Rp ${total.toLocaleString()}*`;
+
+        // --- TEKS UNTUK PELANGGAN ---
+        let txtCustomer = `*NOTIFIKASI PESANAN NRG*\n`;
+        txtCustomer += `Halo kak *${name}*, pesanan Anda sudah masuk ke sistem kami.\n\n`;
+        txtCustomer += `*Detail Pesanan:*\n`;
+        cart.forEach(item => txtCustomer += `- ${item.name} (x${item.qty})\n`);
+        txtCustomer += `\n📍 *Alamat:* ${addr}\n`;
+        txtCustomer += `⏱️ *Estimasi:* ${deliveryText}\n`;
+        txtCustomer += `--------------------------\n`;
+        txtCustomer += `*Total Bayar: Rp ${total.toLocaleString()}*\n`;
+        txtCustomer += `--------------------------\n`;
+        txtCustomer += `Mohon ditunggu ya kak, kurir kami segera meluncur! ⚡`;
         
-        window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txt)}`, '_blank');
+        // Eksekusi pengiriman (Membuka 2 Tab)
+        alert("Sistem akan membuka WhatsApp untuk Admin dan Pelanggan secara bergantian.");
+        
+        // Buka Pesan Admin
+        window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txtAdmin)}`, '_blank');
+        
+        // Buka Pesan Pelanggan (dengan sedikit delay agar tidak terblokir browser)
+        setTimeout(() => {
+            window.open(`https://wa.me/${wa}?text=${encodeURIComponent(txtCustomer)}`, '_blank');
+        }, 1500);
     }
 
     function filterMenu(cat, el) {
