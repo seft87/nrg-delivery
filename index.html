@@ -3,70 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NRG FAST DELIVERY - Profesional Delivery Service</title>
+    <title>NRG FAST DELIVERY - Cloud System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
         .navbar { background-color: #003366; border-bottom: 4px solid #00a8e8; }
-        
-        /* Banner Promo */
         .promo-banner {
             background: linear-gradient(45deg, #003366, #00a8e8);
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0, 168, 232, 0.2);
+            color: white; border-radius: 15px; padding: 20px; margin-bottom: 25px;
         }
-
         .category-pill { 
             cursor: pointer; transition: 0.3s; border: 2px solid #003366; 
             color: #003366; font-weight: 600; background: white; white-space: nowrap;
         }
         .category-pill.active { background-color: #003366; color: white; }
-
         .menu-card { 
             border: none; border-radius: 15px; transition: 0.3s; background: white; 
             height: 100%; overflow: hidden; display: flex; flex-direction: column; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,51,102,0.1); }
-        
-        /* Optimasi Gambar agar seragam */
-        .menu-img { 
-            height: 160px; 
-            width: 100%;
-            object-fit: cover; 
-            aspect-ratio: 1 / 1;
-            background-color: #eee;
-        }
-        
-        .seller-info { 
-            background-color: #e6f7ff; color: #003366; font-size: 0.7rem; 
-            padding: 6px; text-align: center; font-style: italic; 
-            border-bottom: 1px solid #d1e9ff; font-weight: 500; 
-        }
-
+        .menu-img { height: 160px; width: 100%; object-fit: cover; background-color: #eee; }
+        .seller-info { background-color: #e6f7ff; color: #003366; font-size: 0.7rem; padding: 4px; text-align: center; }
         .cart-box { background: white; border-radius: 15px; padding: 20px; position: sticky; top: 20px; border: 1px solid #d1e9ff; }
-        
-        .btn-custom { 
-            background-color: #00a8e8; color: white; border: none; border-radius: 8px; 
-            font-weight: 600; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 168, 232, 0.3);
-        }
-        .btn-custom:hover { background-color: #003366; color: white; }
-        
-        .btn-outline-nrg { color: #003366; border: 1px solid #003366; font-weight: 600; }
-        .btn-outline-nrg:hover { background-color: #003366; color: white; }
-
         .admin-section { display: none; background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #003366; }
         .btn-admin-toggle { opacity: 0.3; font-size: 10px; color: white; border: none; background: none; }
-        
-        .rekap-container { background: #f8f9fa; border-radius: 10px; padding: 15px; margin-top: 20px; border: 1px solid #dee2e6; }
-        .search-box { border-radius: 20px; border: 2px solid #d1e9ff; padding-left: 15px; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; }
     </style>
 </head>
 <body>
+
+<div id="loading" class="loading-overlay">
+    <div class="spinner-border text-primary"></div>
+    <span class="ms-2">Menyambungkan ke Database...</span>
+</div>
 
 <nav class="navbar navbar-dark shadow-sm mb-4">
     <div class="container d-flex justify-content-between align-items-center">
@@ -78,18 +48,14 @@
 <div class="container mb-5">
     <div class="promo-banner d-flex align-items-center justify-content-between">
         <div>
-            <h4 class="fw-bold mb-1">Promo Hari Ini! 🍕</h4>
-            <p class="mb-0 opacity-75">Ongkir Flat Rp 5.000 ke seluruh area jangkauan.</p>
-        </div>
-        <div class="d-none d-md-block">
-            <span class="badge bg-white text-primary px-3 py-2">Flash Delivery ⚡</span>
+            <h4 class="fw-bold mb-1">Database Cloud Aktif 🌐</h4>
+            <p class="mb-0 opacity-75">Menu tersinkronisasi otomatis di semua perangkat.</p>
         </div>
     </div>
 
     <div id="admin-panel" class="admin-section shadow-sm">
-        <h5 class="fw-bold mb-3 text-center text-primary">🛠️ PANEL ADMIN</h5>
-        <div class="row g-2 mb-3 p-3 rounded" id="admin-form-container">
-            <input type="hidden" id="edit-id">
+        <h5 class="fw-bold mb-3 text-center text-primary">🛠️ TAMBAH MENU KE CLOUD</h5>
+        <div class="row g-2 mb-3">
             <div class="col-md-3"><input type="text" id="adm-name" class="form-control form-control-sm" placeholder="Nama Menu"></div>
             <div class="col-md-2"><input type="number" id="adm-price" class="form-control form-control-sm" placeholder="Harga"></div>
             <div class="col-md-2">
@@ -98,54 +64,16 @@
                     <option value="Minuman">Minuman</option>
                     <option value="Snack">Snack</option>
                     <option value="Sembako">Sembako</option>
-                    <option value="ATK">ATK</option>
-                    <option value="Kesehatan">Kesehatan</option>
-                    <option value="Lainnya">Lainnya</option>
                 </select>
             </div>
-            <div class="col-md-3"><input type="text" id="adm-seller" class="form-control form-control-sm" placeholder="Toko/Penjual"></div>
-            <div class="col-md-2">
-                <button class="btn btn-success btn-sm w-100" id="btn-save" onclick="saveNewOrUpdate()">SIMPAN</button>
-                <button class="btn btn-secondary btn-sm w-100 mt-1" id="btn-cancel-edit" style="display:none;" onclick="cancelEdit()">BATAL</button>
-            </div>
-            <div class="col-12 mt-2"><input type="text" id="adm-img" class="form-control form-control-sm" placeholder="URL Gambar Produk"></div>
-        </div>
-
-        <div class="table-responsive mb-4">
-            <table class="table table-sm align-middle text-center mt-2">
-                <thead class="table-dark"><tr><th>Nama</th><th>Penjual</th><th>Harga</th><th>Aksi</th></tr></thead>
-                <tbody id="admin-list"></tbody>
-            </table>
-        </div>
-
-        <div class="rekap-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold m-0">📋 Rekap Pesanan (Hari Ini)</h6>
-                <button class="btn btn-outline-danger btn-sm" onclick="clearHistory()">Reset Rekap Lokal</button>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-sm table-hover small">
-                    <thead class="table-primary text-center">
-                        <tr>
-                            <th>Jam</th>
-                            <th>Nama</th>
-                            <th>Alamat</th>
-                            <th>No WA</th>
-                            <th>Pesanan</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="order-history-list"></tbody>
-                </table>
-            </div>
+            <div class="col-md-3"><input type="text" id="adm-seller" class="form-control form-control-sm" placeholder="Toko"></div>
+            <div class="col-md-2"><button class="btn btn-success btn-sm w-100" onclick="saveToCloud()">SIMPAN KE GOOGLE</button></div>
+            <div class="col-12 mt-2"><input type="text" id="adm-img" class="form-control form-control-sm" placeholder="URL Gambar Langsung (Direct Link)"></div>
         </div>
     </div>
 
     <div class="row mb-4 align-items-center">
         <div class="col-md-8 d-flex gap-2 overflow-auto pb-2" id="filter-container"></div>
-        <div class="col-md-4 mt-2 mt-md-0">
-            <input type="text" id="search-input" class="form-control search-box" placeholder="Cari produk atau toko..." onkeyup="searchMenu()">
-        </div>
     </div>
 
     <div class="row">
@@ -154,105 +82,50 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="cart-box shadow-sm border-top border-4 border-primary">
-                <h6 class="fw-bold mb-3 border-bottom pb-2">📦 Detail Pesanan</h6>
+            <div class="cart-box shadow-sm">
+                <h6 class="fw-bold mb-3 border-bottom pb-2">📦 Keranjang</h6>
                 <div id="cart-list" class="mb-3"></div>
                 
                 <div id="checkout-form" style="display: none;">
-                    <hr>
-                    <input type="text" id="c-name" class="form-control form-control-sm mb-2" placeholder="Nama Lengkap">
-                    <input type="number" id="c-wa" class="form-control form-control-sm mb-2" placeholder="Nomor WhatsApp (Contoh: 0852...)">
-                    <textarea id="c-address" class="form-control form-control-sm mb-2" rows="2" placeholder="Alamat Lengkap Pengiriman"></textarea>
-                    
-                    <label class="small fw-bold mb-1">Opsi Pengiriman:</label>
-                    <select id="c-delivery" class="form-select form-select-sm mb-2" onchange="toggleCustomTime()">
-                        <option value="Segera (5-15 menit)">Segera (5-15 menit)</option>
-                        <option value="Biasa (30-60 menit)">Biasa (30-60 menit)</option>
-                        <option value="Lainnya">Lainnya : pada pukul...</option>
-                    </select>
-                    <input type="time" id="c-time" class="form-control form-control-sm mb-2" style="display: none;">
-
-                    <label class="small fw-bold mb-1">Metode Pembayaran:</label>
-                    <select id="c-payment" class="form-select form-select-sm mb-3">
-                        <option value="COD">Bayar di Tempat (COD)</option>
-                        <option value="Transfer BRI">Transfer BRI</option>
-                        <option value="DANA">DANA</option>
-                    </select>
+                    <input type="text" id="c-name" class="form-control form-control-sm mb-2" placeholder="Nama Anda">
+                    <input type="number" id="c-wa" class="form-control form-control-sm mb-2" placeholder="No WhatsApp">
+                    <textarea id="c-address" class="form-control form-control-sm mb-2" placeholder="Alamat"></textarea>
                 </div>
 
                 <div class="small border-top pt-2">
-                    <div class="d-flex justify-content-between mb-1"><span>Subtotal:</span><span id="c-subtotal">Rp 0</span></div>
-                    <div class="d-flex justify-content-between mb-1 text-success"><span>Ongkir:</span><span>Rp 5.000</span></div>
                     <div class="d-flex justify-content-between fw-bold mb-3 fs-5 text-primary"><span>Total:</span><span id="c-total">Rp 0</span></div>
                 </div>
-                <button class="btn btn-custom w-100 py-2 shadow-sm" onclick="processCheckout()">CHECKOUT KE WA</button>
+                <button class="btn btn-primary w-100 py-2" onclick="processCheckout()">KIRIM PESANAN</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // --- KONFIGURASI PENTING ---
     const config = {
         adminPhone: "6285281635766",
         pass: "25051987",
         shippingFee: 5000,
-        scriptURL: 'TEMPEL_URL_WEB_APP_ANDA_DISINI' 
+        scriptURL: 'https://script.google.com/macros/s/AKfycbyMUaZWMGc5L63RCjaXnWW1HYRiVHWS_NCHk37Z3c6b_C94hKe9qE5XXHaj99w2IGTU/exec' // <--- GANTI INI
     };
 
-    const DB_KEY = 'nrg_fast_delivery_v3_menu';
-    const LOG_KEY = 'nrg_order_history_v3';
-    const categories = ["Semua", "Makanan", "Minuman", "Snack", "Sembako", "ATK", "Kesehatan", "Lainnya"];
-
-    let menuData = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+    let menuData = [];
     let cart = [];
     let currentFilter = "Semua";
-    let isEditing = false;
+    const categories = ["Semua", "Makanan", "Minuman", "Snack", "Sembako"];
 
-    function init() {
+    async function init() {
+        showLoading(true);
         renderFilters();
-        renderMenu();
-        updateCart();
-    }
-
-    function toggleAdmin() {
-        const panel = document.getElementById('admin-panel');
-        if (panel.style.display === 'none' || panel.style.display === '') {
-            if (prompt("Password Admin:") === config.pass) {
-                panel.style.display = 'block';
-                renderAdminList();
-                renderOrderHistory();
-            } else { alert("Akses Ditolak!"); }
-        } else { panel.style.display = 'none'; cancelEdit(); }
-    }
-
-    function renderOrderHistory() {
-        const history = JSON.parse(localStorage.getItem(LOG_KEY)) || [];
-        const today = new Date().toLocaleDateString('id-ID');
-        const container = document.getElementById('order-history-list');
-        const todayOrders = history.filter(o => o.date === today);
-
-        if (todayOrders.length === 0) {
-            container.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Belum ada pesanan hari ini.</td></tr>';
-            return;
+        try {
+            const res = await fetch(config.scriptURL);
+            menuData = await res.json();
+            renderMenu();
+        } catch (e) {
+            alert("Gagal memuat data dari Cloud. Pastikan ScriptURL benar.");
         }
-
-        container.innerHTML = todayOrders.map(o => `
-            <tr>
-                <td class="text-center">${o.time}</td>
-                <td class="fw-bold">${o.customer}</td>
-                <td style="font-size:0.75rem">${o.address || '-'}</td>
-                <td style="font-size:0.75rem">${o.phone || '-'}</td>
-                <td style="font-size:0.7rem">${o.items}</td>
-                <td class="text-end fw-bold">Rp ${o.total.toLocaleString()}</td>
-            </tr>
-        `).reverse().join('');
-    }
-
-    function clearHistory() {
-        if(confirm("Hapus rekap lokal? (Data di Google Sheets tetap aman)")) {
-            localStorage.removeItem(LOG_KEY);
-            renderOrderHistory();
-        }
+        showLoading(false);
     }
 
     function renderFilters() {
@@ -262,28 +135,83 @@
         `).join('');
     }
 
-    function renderMenu(data = menuData) {
+    function renderMenu() {
         const container = document.getElementById('menu-container');
-        const filtered = currentFilter === "Semua" ? data : data.filter(m => m.cat === currentFilter);
+        const filtered = currentFilter === "Semua" ? menuData : menuData.filter(m => m.cat === currentFilter);
         
-        if(filtered.length === 0) {
-            container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Produk belum tersedia di kategori ini.</div>';
-            return;
-        }
-
         container.innerHTML = filtered.map(item => `
             <div class="col-6 col-md-4">
                 <div class="card menu-card">
-                    <img src="${item.img || 'https://via.placeholder.com/150'}" class="card-img-top menu-img">
-                    <div class="seller-info">oleh ${item.seller}</div>
-                    <div class="card-body p-2 text-center d-flex flex-column">
-                        <h6 class="fw-bold mb-1 small">${item.name}</h6>
-                        <p class="text-primary fw-bold small mb-2 mt-auto">Rp ${item.price.toLocaleString()}</p>
-                        <button class="btn btn-sm btn-outline-nrg w-100" onclick="addToCart(${item.id})">Beli</button>
+                    <img src="${item.img || 'https://via.placeholder.com/150'}" class="menu-img">
+                    <div class="seller-info">Toko: ${item.seller}</div>
+                    <div class="p-2 text-center">
+                        <h6 class="fw-bold small mb-1">${item.name}</h6>
+                        <p class="text-primary fw-bold small mb-2">Rp ${parseInt(item.price).toLocaleString()}</p>
+                        <button class="btn btn-sm btn-outline-primary w-100" onclick="addToCart(${item.id})">Tambah</button>
                     </div>
                 </div>
             </div>
         `).join('');
+    }
+
+    async function saveToCloud() {
+        const name = document.getElementById('adm-name').value;
+        const price = document.getElementById('adm-price').value;
+        const cat = document.getElementById('adm-cat').value;
+        const seller = document.getElementById('adm-seller').value;
+        const img = document.getElementById('adm-img').value;
+
+        if(!name || !price) return alert("Lengkapi data!");
+
+        showLoading(true);
+        const payload = { action: "saveMenu", name, price, cat, seller, img };
+
+        await fetch(config.scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(payload)
+        });
+
+        alert("Data terkirim ke Google Sheets! Halaman akan dimuat ulang.");
+        location.reload();
+    }
+
+    function addToCart(id) {
+        const item = menuData.find(x => x.id == id);
+        const cartItem = cart.find(x => x.id == id);
+        if (cartItem) { cartItem.qty += 1; } else { cart.push({ ...item, qty: 1 }); }
+        updateCart();
+    }
+
+    function updateCart() {
+        const list = document.getElementById('cart-list');
+        const totalDisp = document.getElementById('c-total');
+        if (cart.length === 0) {
+            list.innerHTML = '<p class="text-muted text-center small">Kosong</p>';
+            totalDisp.innerText = 'Rp 0';
+            document.getElementById('checkout-form').style.display = 'none';
+            return;
+        }
+        document.getElementById('checkout-form').style.display = 'block';
+        list.innerHTML = cart.map((item, i) => `
+            <div class="d-flex justify-content-between small mb-1 border-bottom">
+                <span>${item.name} x${item.qty}</span>
+                <span>Rp ${(item.price * item.qty).toLocaleString()}</span>
+            </div>
+        `).join('');
+        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
+        totalDisp.innerText = `Rp ${(subtotal + config.shippingFee).toLocaleString()}`;
+    }
+
+    function processCheckout() {
+        const name = document.getElementById('c-name').value;
+        const wa = document.getElementById('c-wa').value;
+        if(!name || !wa) return alert("Isi data penerima!");
+        
+        let txt = `*PESANAN BARU NRG*\nNama: ${name}\nWA: ${wa}\n\n*Daftar:*`;
+        cart.forEach(item => txt += `\n- ${item.name} x${item.qty}`);
+        
+        window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txt)}`, '_blank');
     }
 
     function filterMenu(cat, el) {
@@ -293,170 +221,14 @@
         renderMenu();
     }
 
-    function searchMenu() {
-        const key = document.getElementById('search-input').value.toLowerCase();
-        renderMenu(menuData.filter(m => m.name.toLowerCase().includes(key) || m.seller.toLowerCase().includes(key)));
-    }
-
-    function addToCart(id) {
-        const item = menuData.find(x => x.id === id);
-        const cartItem = cart.find(x => x.id === id);
-        if (cartItem) { cartItem.qty += 1; } else { cart.push({ ...item, qty: 1 }); }
-        updateCart();
-    }
-
-    function updateCart() {
-        const list = document.getElementById('cart-list');
-        const subtotalDisp = document.getElementById('c-subtotal');
-        const totalDisp = document.getElementById('c-total');
-        
-        if (cart.length === 0) {
-            list.innerHTML = '<p class="text-muted text-center small">Keranjang masih kosong</p>';
-            subtotalDisp.innerText = 'Rp 0';
-            totalDisp.innerText = 'Rp 0';
-            document.getElementById('checkout-form').style.display = 'none';
-            return;
+    function toggleAdmin() {
+        if (prompt("Password:") === config.pass) {
+            document.getElementById('admin-panel').style.display = 'block';
         }
-
-        document.getElementById('checkout-form').style.display = 'block';
-        list.innerHTML = cart.map((item, i) => `
-            <div class="d-flex justify-content-between mb-2 small border-bottom pb-1">
-                <span>${item.name} (x${item.qty})</span>
-                <span>Rp ${(item.price * item.qty).toLocaleString()} 
-                <button class="btn btn-sm text-danger p-0 ms-2" onclick="cart.splice(${i},1);updateCart();">×</button></span>
-            </div>
-        `).join('');
-
-        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
-        subtotalDisp.innerText = `Rp ${subtotal.toLocaleString()}`;
-        totalDisp.innerText = `Rp ${(subtotal + config.shippingFee).toLocaleString()}`;
     }
 
-    function toggleCustomTime() {
-        document.getElementById('c-time').style.display = (document.getElementById('c-delivery').value === "Lainnya") ? "block" : "none";
-    }
-
-    async function processCheckout() {
-        const name = document.getElementById('c-name').value;
-        const wa = document.getElementById('c-wa').value;
-        const addr = document.getElementById('c-address').value;
-        const pay = document.getElementById('c-payment').value;
-        const delivery = document.getElementById('c-delivery').value;
-        const customTime = document.getElementById('c-time').value;
-
-        if (!name || !wa || !addr) return alert("Mohon lengkapi data penerima!");
-
-        // Pembersihan Nomor WhatsApp agar format 62...
-        let cleanWA = wa.replace(/\D/g, ''); 
-        if (cleanWA.startsWith('0')) cleanWA = '62' + cleanWA.substring(1);
-
-        const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
-        const total = subtotal + config.shippingFee;
-        const itemsText = cart.map(item => `${item.name} x${item.qty}`).join(', ');
-
-        let deliveryText = delivery === "Lainnya" ? `Pukul ${customTime}` : delivery;
-
-        const orderData = {
-            date: new Date().toLocaleDateString('id-ID'),
-            time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
-            customer: name,
-            phone: cleanWA,
-            address: addr,
-            items: itemsText,
-            total: total
-        };
-
-        // Simpan ke Rekap Lokal
-        const history = JSON.parse(localStorage.getItem(LOG_KEY)) || [];
-        history.push(orderData);
-        localStorage.setItem(LOG_KEY, JSON.stringify(history));
-
-        // Kirim ke Google Sheets (jika URL tersedia)
-        if(config.scriptURL !== 'TEMPEL_URL_WEB_APP_ANDA_DISINI') {
-            fetch(config.scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(orderData)
-            }).catch(e => console.log("Gagal kirim ke Sheets"));
-        }
-
-        // Susun Pesan WhatsApp
-        let txt = `*PESANAN NRG FAST DELIVERY*\n--------------------------\n👤 Nama: ${name}\n📱 WA: ${cleanWA}\n📍 Alamat: ${addr}\n⏱️ Kirim: ${deliveryText}\n💳 Bayar: ${pay}\n--------------------------\n*Daftar Belanja:*`;
-        cart.forEach(item => txt += `\n- ${item.name} (x${item.qty})`);
-        txt += `\n\n*TOTAL TAGIHAN: Rp ${total.toLocaleString()}*`;
-        if(pay !== "COD") txt += `\n\n_Mohon lampirkan bukti transfer setelah pesan ini terkirim._`;
-
-        window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txt)}`, '_blank');
-        
-        cart = []; 
-        updateCart();
-        if(document.getElementById('admin-panel').style.display === 'block') renderOrderHistory();
-    }
-
-    function renderAdminList() {
-        document.getElementById('admin-list').innerHTML = menuData.map((m, i) => `
-            <tr>
-                <td class="small text-start">${m.name}</td>
-                <td class="small">${m.seller}</td>
-                <td class="small">Rp ${m.price.toLocaleString()}</td>
-                <td>
-                    <button class="btn btn-primary btn-sm" onclick="startEdit(${i})">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteMenu(${i})">×</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function saveNewOrUpdate() {
-        const name = document.getElementById('adm-name').value;
-        const price = parseInt(document.getElementById('adm-price').value);
-        const cat = document.getElementById('adm-cat').value;
-        const seller = document.getElementById('adm-seller').value || "Umum";
-        const img = document.getElementById('adm-img').value || "https://via.placeholder.com/150";
-
-        if (!name || !price) return alert("Mohon isi nama produk dan harga!");
-
-        if (isEditing) {
-            const index = document.getElementById('edit-id').value;
-            menuData[index] = { ...menuData[index], name, price, cat, seller, img };
-        } else {
-            menuData.push({ id: Date.now(), name, price, cat, seller, img });
-        }
-        
-        saveData();
-        cancelEdit();
-    }
-
-    function startEdit(i) {
-        isEditing = true;
-        const item = menuData[i];
-        document.getElementById('edit-id').value = i;
-        document.getElementById('adm-name').value = item.name;
-        document.getElementById('adm-price').value = item.price;
-        document.getElementById('adm-cat').value = item.cat;
-        document.getElementById('adm-seller').value = item.seller;
-        document.getElementById('adm-img').value = item.img;
-        document.getElementById('btn-save').innerText = "UPDATE";
-        document.getElementById('btn-cancel-edit').style.display = "block";
-    }
-
-    function cancelEdit() {
-        isEditing = false;
-        document.getElementById('adm-name').value = "";
-        document.getElementById('adm-price').value = "";
-        document.getElementById('adm-seller').value = "";
-        document.getElementById('adm-img').value = "";
-        document.getElementById('btn-save').innerText = "SIMPAN";
-        document.getElementById('btn-cancel-edit').style.display = "none";
-    }
-
-    function deleteMenu(i) {
-        if(confirm("Hapus produk ini secara permanen?")) { menuData.splice(i, 1); saveData(); }
-    }
-
-    function saveData() {
-        localStorage.setItem(DB_KEY, JSON.stringify(menuData));
-        renderMenu(); renderAdminList();
+    function showLoading(show) {
+        document.getElementById('loading').style.display = show ? 'flex' : 'none';
     }
 
     init();
