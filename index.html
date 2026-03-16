@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NRG FAST DELIVERY - Profesional Delivery Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
+        .navbar { background-color: #003366; border-bottom: 4px solid #00a8e8; }
+        
+        .category-pill { 
+            cursor: pointer; 
+            transition: 0.3s; 
+            border: 2px solid #003366; 
+            color: #003366; 
+            font-weight: 600; 
+            background: white; 
+            white-space: nowrap;
+        }
+        .category-pill.active { background-color: #003366; color: white; }
+
+        .menu-card { 
+            border: none; 
+            border-radius: 15px; 
+            transition: 0.3s; 
+            background: white; 
+            height: 100%; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,51,102,0.1); }
+        .menu-img { height: 140px; object-fit: cover; }
+        
+        .seller-info { 
+            background-color: #e6f7ff; 
+            color: #003366; 
+            font-size: 0.7rem; 
+            padding: 6px; 
+            text-align: center; 
+            font-style: italic; 
+            border-bottom: 1px solid #d1e9ff; 
+            font-weight: 500; 
+        }
+
+        .cart-box { background: white; border-radius: 15px; padding: 20px; position: sticky; top: 20px; border: 1px solid #d1e9ff; }
+        
+        .btn-custom { 
+            background-color: #00a8e8; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            transition: 0.3s; 
+        }
+        .btn-custom:hover { background-color: #003366; color: white; }
+        
+        .btn-outline-nrg {
+            color: #003366;
+            border: 1px solid #003366;
+            font-weight: 600;
+        }
+        .btn-outline-nrg:hover {
+            background-color: #003366;
+            color: white;
+        }
+
+        .admin-section { display: none; background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #003366; }
+        .btn-admin-toggle { opacity: 0.3; font-size: 10px; color: white; border: none; background: none; }
+        .edit-mode { background-color: #fffde7 !important; border: 2px solid #ffd600 !important; }
+        
+        /* Gaya Scrollbar untuk kategori */
+        .category-scroll::-webkit-scrollbar { height: 5px; }
+        .category-scroll::-webkit-scrollbar-thumb { background: #00a8e8; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark shadow-sm mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a class="navbar-brand fw-bold" href="#">⚡ NRG FAST DELIVERY</a>
+        <button class="btn-admin-toggle" onclick="toggleAdmin()">ADMIN</button>
+    </div>
+</nav>
+
+<div class="container mb-5">
+    <div id="admin-panel" class="admin-section shadow-sm">
+        <h5 class="fw-bold mb-3 text-center text-primary">🛠️ PANEL ADMIN (MANAJEMEN KATEGORI BARU)</h5>
+        <div class="row g-2 mb-3 p-3 rounded" id="admin-form-container">
+            <input type="hidden" id="edit-id">
+            <div class="col-md-3"><input type="text" id="adm-name" class="form-control form-control-sm" placeholder="Nama Menu/Barang"></div>
+            <div class="col-md-2"><input type="number" id="adm-price" class="form-control form-control-sm" placeholder="Harga"></div>
+            <div class="col-md-2">
+                <select id="adm-cat" class="form-select form-select-sm">
+                    <option value="Makanan">Makanan</option>
+                    <option value="Minuman">Minuman</option>
+                    <option value="Snack">Snack</option>
+                    <option value="Sembako">Sembako</option>
+                    <option value="ATK">ATK</option>
+                    <option value="Kesehatan">Kesehatan</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+            <div class="col-md-3"><input type="text" id="adm-seller" class="form-control form-control-sm" placeholder="Nama Toko/Penjual"></div>
+            <div class="col-md-2">
+                <button class="btn btn-success btn-sm w-100" id="btn-save" onclick="saveNewOrUpdate()">TAMBAH</button>
+                <button class="btn btn-secondary btn-sm w-100 mt-1" id="btn-cancel-edit" style="display:none;" onclick="cancelEdit()">BATAL</button>
+            </div>
+            <div class="col-12 mt-2"><input type="text" id="adm-img" class="form-control form-control-sm" placeholder="URL Gambar Produk"></div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle text-center mt-2">
+                <thead class="table-dark"><tr><th>Nama</th><th>Penjual</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead>
+                <tbody id="admin-list"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-4 overflow-auto pb-2 justify-content-start category-scroll" id="filter-container">
+        </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="row g-3" id="menu-container"></div>
+        </div>
+        <div class="col-lg-4">
+            <div class="cart-box shadow-sm border-top border-4 border-primary">
+                <h6 class="fw-bold mb-3 border-bottom pb-2">📦 Detail Pesanan</h6>
+                <div id="cart-list" class="mb-3"><p class="text-muted text-center small">Keranjang kosong</p></div>
+                <div id="checkout-form" style="display: none;">
+                    <hr>
+                    <input type="text" id="c-name" class="form-control form-control-sm mb-2" placeholder="Nama Lengkap">
+                    <input type="number" id="c-wa" class="form-control form-control-sm mb-2" placeholder="Nomor WhatsApp">
+                    <textarea id="c-address" class="form-control form-control-sm mb-2" rows="2" placeholder="Alamat Pengiriman"></textarea>
+                    <select id="c-payment" class="form-select form-select-sm mb-3">
+                        <option value="COD">Bayar di Tempat (COD)</option>
+                        <option value="Transfer BRI">Transfer BRI</option>
+                        <option value="DANA">DANA</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-between fw-bold mb-3 border-top pt-2">
+                    <span>Total:</span>
+                    <span id="c-total" class="text-primary">Rp 0</span>
+                </div>
+                <button class="btn btn-custom w-100 py-2 shadow-sm" onclick="processCheckout()">CHECKOUT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const config = {
+        adminPhone: "6285281635766",
+        pass: "25051987"
+    };
+
+    const DB_KEY = 'nrg_fast_delivery_v3_menu';
+    
+    // Daftar kategori yang diizinkan
+    const categories = ["Semua", "Makanan", "Minuman", "Snack", "Sembako", "ATK", "Kesehatan", "Lainnya"];
+
+    let menuData = JSON.parse(localStorage.getItem(DB_KEY)) || [
+        { id: 1, name: "Nasi Goreng Spesial", price: 25000, cat: "Makanan", seller: "Kampung Turis Food", img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400" },
+        { id: 2, name: "Minyak Goreng 1L", price: 18000, cat: "Sembako", seller: "Toko Berkah", img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400" }
+    ];
+
+    let cart = [];
+    let currentFilter = "Semua";
+    let isEditing = false;
+
+    function toggleAdmin() {
+        const panel = document.getElementById('admin-panel');
+        if (panel.style.display === 'none' || panel.style.display === '') {
+            if (prompt("Password Admin:") === config.pass) {
+                panel.style.display = 'block';
+                renderAdminList();
+            } else { alert("Akses Ditolak!"); }
+        } else { panel.style.display = 'none'; cancelEdit(); }
+    }
+
+    function renderFilters() {
+        const container = document.getElementById('filter-container');
+        container.innerHTML = categories.map(cat => `
+            <div class="badge rounded-pill category-pill px-4 py-2 ${currentFilter === cat ? 'active' : ''}" 
+                 onclick="filterMenu('${cat}', this)">${cat}</div>
+        `).join('');
+    }
+
+    function renderAdminList() {
+        const list = document.getElementById('admin-list');
+        list.innerHTML = menuData.map((item, index) => `
+            <tr>
+                <td class="small text-start">${item.name}</td>
+                <td class="small">${item.seller}</td>
+                <td class="small"><span class="badge bg-secondary">${item.cat}</span></td>
+                <td class="small">Rp ${item.price.toLocaleString()}</td>
+                <td>
+                    <button class="btn btn-outline-primary btn-sm px-2" onclick="startEdit(${index})">Edit</button>
+                    <button class="btn btn-danger btn-sm px-2" onclick="deleteMenu(${index})">×</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function startEdit(index) {
+        isEditing = true;
+        const item = menuData[index];
+        document.getElementById('edit-id').value = index;
+        document.getElementById('adm-name').value = item.name;
+        document.getElementById('adm-price').value = item.price;
+        document.getElementById('adm-cat').value = item.cat;
+        document.getElementById('adm-seller').value = item.seller;
+        document.getElementById('adm-img').value = item.img;
+        
+        document.getElementById('btn-save').innerText = "UPDATE";
+        document.getElementById('btn-save').className = "btn btn-warning btn-sm w-100";
+        document.getElementById('btn-cancel-edit').style.display = "block";
+        document.getElementById('admin-form-container').classList.add('edit-mode');
+        window.scrollTo(0, 0);
+    }
+
+    function cancelEdit() {
+        isEditing = false;
+        document.getElementById('edit-id').value = "";
+        document.getElementById('adm-name').value = "";
+        document.getElementById('adm-price').value = "";
+        document.getElementById('adm-seller').value = "";
+        document.getElementById('adm-img').value = "";
+        
+        document.getElementById('btn-save').innerText = "TAMBAH";
+        document.getElementById('btn-save').className = "btn btn-success btn-sm w-100";
+        document.getElementById('btn-cancel-edit').style.display = "none";
+        document.getElementById('admin-form-container').classList.remove('edit-mode');
+    }
+
+    function saveNewOrUpdate() {
+        const name = document.getElementById('adm-name').value;
+        const price = parseInt(document.getElementById('adm-price').value);
+        const cat = document.getElementById('adm-cat').value;
+        const seller = document.getElementById('adm-seller').value || "Penjual Umum";
+        const img = document.getElementById('adm-img').value || "https://via.placeholder.com/150";
+
+        if (!name || !price) return alert("Lengkapi data!");
+
+        if (isEditing) {
+            const index = document.getElementById('edit-id').value;
+            menuData[index] = { ...menuData[index], name, price, cat, seller, img };
+        } else {
+            menuData.push({ id: Date.now(), name, price, cat, seller, img });
+        }
+        
+        saveData();
+        cancelEdit();
+    }
+
+    function deleteMenu(index) {
+        if(confirm("Hapus item ini?")) {
+            menuData.splice(index, 1);
+            saveData();
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem(DB_KEY, JSON.stringify(menuData));
+        renderMenu(); renderAdminList();
+    }
+
+    function filterMenu(cat, el) {
+        currentFilter = cat;
+        document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        renderMenu();
+    }
+
+    function renderMenu() {
+        const container = document.getElementById('menu-container');
+        const filtered = currentFilter === "Semua" ? menuData : menuData.filter(m => m.cat === currentFilter);
+        
+        if(filtered.length === 0) {
+            container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Belum ada barang di kategori ini.</div>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(item => `
+            <div class="col-6 col-md-4">
+                <div class="card menu-card">
+                    <img src="${item.img}" class="card-img-top menu-img">
+                    <div class="seller-info">by ${item.seller}</div>
+                    <div class="card-body p-2 text-center">
+                        <div class="badge bg-light text-muted mb-1" style="font-size: 0.6rem;">${item.cat}</div>
+                        <h6 class="fw-bold mb-1 small text-dark">${item.name}</h6>
+                        <p class="text-primary fw-bold small mb-2">Rp ${item.price.toLocaleString()}</p>
+                        <button class="btn btn-sm btn-outline-nrg w-100" onclick="addToCart(${item.id})">Beli</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function addToCart(id) {
+        cart.push(menuData.find(x => x.id === id));
+        updateCart();
+    }
+
+    function updateCart() {
+        const list = document.getElementById('cart-list');
+        const totalDisp = document.getElementById('c-total');
+        const form = document.getElementById('checkout-form');
+        if (cart.length === 0) {
+            list.innerHTML = '<p class="text-muted text-center small">Keranjang kosong</p>';
+            totalDisp.innerText = 'Rp 0';
+            form.style.display = 'none';
+            return;
+        }
+        form.style.display = 'block';
+        list.innerHTML = cart.map((item, i) => `
+            <div class="d-flex justify-content-between mb-1 small border-bottom pb-1">
+                <span>${item.name}</span>
+                <span>Rp ${item.price.toLocaleString()} <button class="btn btn-sm text-danger p-0" onclick="remove(${i})">×</button></span>
+            </div>
+        `).join('');
+        const total = cart.reduce((s, x) => s + x.price, 0);
+        totalDisp.innerText = `Rp ${total.toLocaleString()}`;
+    }
+
+    function remove(i) { cart.splice(i, 1); updateCart(); }
+
+    function processCheckout() {
+        const name = document.getElementById('c-name').value;
+        const wa = document.getElementById('c-wa').value;
+        const addr = document.getElementById('c-address').value;
+        const pay = document.getElementById('c-payment').value;
+        if (!name || !wa || !addr) return alert("Harap lengkapi detail pengiriman!");
+
+        let txt = `*PESANAN BARU - NRG FAST DELIVERY*\n--------------------------\n👤 Nama: ${name}\n📱 No. WA: ${wa}\n📍 Alamat: ${addr}\n💳 Bayar: ${pay}\n--------------------------\n\n*Pesanan:*`;
+        cart.forEach((item, i) => { txt += `\n${i+1}. ${item.name} (${item.cat})`; });
+        const grand = cart.reduce((s, x) => s + x.price, 0);
+        txt += `\n\n*Total Tagihan: Rp ${grand.toLocaleString()}*`;
+        window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txt)}`, '_blank');
+        cart = []; updateCart();
+    }
+
+    // Inisialisasi awal
+    renderFilters();
+    renderMenu();
+</script>
+</body>
+</html>
