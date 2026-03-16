@@ -10,6 +10,16 @@
         body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
         .navbar { background-color: #003366; border-bottom: 4px solid #00a8e8; }
         
+        /* Banner Promo */
+        .promo-banner {
+            background: linear-gradient(45deg, #003366, #00a8e8);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 168, 232, 0.2);
+        }
+
         .category-pill { 
             cursor: pointer; transition: 0.3s; border: 2px solid #003366; 
             color: #003366; font-weight: 600; background: white; white-space: nowrap;
@@ -22,7 +32,15 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,51,102,0.1); }
-        .menu-img { height: 140px; object-fit: cover; }
+        
+        /* Optimasi Gambar agar seragam */
+        .menu-img { 
+            height: 160px; 
+            width: 100%;
+            object-fit: cover; 
+            aspect-ratio: 1 / 1;
+            background-color: #eee;
+        }
         
         .seller-info { 
             background-color: #e6f7ff; color: #003366; font-size: 0.7rem; 
@@ -58,6 +76,16 @@
 </nav>
 
 <div class="container mb-5">
+    <div class="promo-banner d-flex align-items-center justify-content-between">
+        <div>
+            <h4 class="fw-bold mb-1">Promo Hari Ini! 🍕</h4>
+            <p class="mb-0 opacity-75">Ongkir Flat Rp 5.000 ke seluruh area jangkauan.</p>
+        </div>
+        <div class="d-none d-md-block">
+            <span class="badge bg-white text-primary px-3 py-2">Flash Delivery ⚡</span>
+        </div>
+    </div>
+
     <div id="admin-panel" class="admin-section shadow-sm">
         <h5 class="fw-bold mb-3 text-center text-primary">🛠️ PANEL ADMIN</h5>
         <div class="row g-2 mb-3 p-3 rounded" id="admin-form-container">
@@ -113,10 +141,10 @@
         </div>
     </div>
 
-    <div class="row mb-4">
+    <div class="row mb-4 align-items-center">
         <div class="col-md-8 d-flex gap-2 overflow-auto pb-2" id="filter-container"></div>
-        <div class="col-md-4">
-            <input type="text" id="search-input" class="form-control search-box" placeholder="Cari produk..." onkeyup="searchMenu()">
+        <div class="col-md-4 mt-2 mt-md-0">
+            <input type="text" id="search-input" class="form-control search-box" placeholder="Cari produk atau toko..." onkeyup="searchMenu()">
         </div>
     </div>
 
@@ -133,8 +161,8 @@
                 <div id="checkout-form" style="display: none;">
                     <hr>
                     <input type="text" id="c-name" class="form-control form-control-sm mb-2" placeholder="Nama Lengkap">
-                    <input type="number" id="c-wa" class="form-control form-control-sm mb-2" placeholder="Nomor WhatsApp">
-                    <textarea id="c-address" class="form-control form-control-sm mb-2" rows="2" placeholder="Alamat Pengiriman"></textarea>
+                    <input type="number" id="c-wa" class="form-control form-control-sm mb-2" placeholder="Nomor WhatsApp (Contoh: 0852...)">
+                    <textarea id="c-address" class="form-control form-control-sm mb-2" rows="2" placeholder="Alamat Lengkap Pengiriman"></textarea>
                     
                     <label class="small fw-bold mb-1">Opsi Pengiriman:</label>
                     <select id="c-delivery" class="form-select form-select-sm mb-2" onchange="toggleCustomTime()">
@@ -239,7 +267,7 @@
         const filtered = currentFilter === "Semua" ? data : data.filter(m => m.cat === currentFilter);
         
         if(filtered.length === 0) {
-            container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Produk kosong.</div>';
+            container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Produk belum tersedia di kategori ini.</div>';
             return;
         }
 
@@ -247,10 +275,10 @@
             <div class="col-6 col-md-4">
                 <div class="card menu-card">
                     <img src="${item.img || 'https://via.placeholder.com/150'}" class="card-img-top menu-img">
-                    <div class="seller-info">by ${item.seller}</div>
-                    <div class="card-body p-2 text-center">
+                    <div class="seller-info">oleh ${item.seller}</div>
+                    <div class="card-body p-2 text-center d-flex flex-column">
                         <h6 class="fw-bold mb-1 small">${item.name}</h6>
-                        <p class="text-primary fw-bold small mb-2">Rp ${item.price.toLocaleString()}</p>
+                        <p class="text-primary fw-bold small mb-2 mt-auto">Rp ${item.price.toLocaleString()}</p>
                         <button class="btn btn-sm btn-outline-nrg w-100" onclick="addToCart(${item.id})">Beli</button>
                     </div>
                 </div>
@@ -283,7 +311,7 @@
         const totalDisp = document.getElementById('c-total');
         
         if (cart.length === 0) {
-            list.innerHTML = '<p class="text-muted text-center small">Keranjang kosong</p>';
+            list.innerHTML = '<p class="text-muted text-center small">Keranjang masih kosong</p>';
             subtotalDisp.innerText = 'Rp 0';
             totalDisp.innerText = 'Rp 0';
             document.getElementById('checkout-form').style.display = 'none';
@@ -295,7 +323,7 @@
             <div class="d-flex justify-content-between mb-2 small border-bottom pb-1">
                 <span>${item.name} (x${item.qty})</span>
                 <span>Rp ${(item.price * item.qty).toLocaleString()} 
-                <button class="btn btn-sm text-danger p-0" onclick="cart.splice(${i},1);updateCart();">×</button></span>
+                <button class="btn btn-sm text-danger p-0 ms-2" onclick="cart.splice(${i},1);updateCart();">×</button></span>
             </div>
         `).join('');
 
@@ -316,7 +344,11 @@
         const delivery = document.getElementById('c-delivery').value;
         const customTime = document.getElementById('c-time').value;
 
-        if (!name || !wa || !addr) return alert("Mohon lengkapi data!");
+        if (!name || !wa || !addr) return alert("Mohon lengkapi data penerima!");
+
+        // Pembersihan Nomor WhatsApp agar format 62...
+        let cleanWA = wa.replace(/\D/g, ''); 
+        if (cleanWA.startsWith('0')) cleanWA = '62' + cleanWA.substring(1);
 
         const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
         const total = subtotal + config.shippingFee;
@@ -328,28 +360,31 @@
             date: new Date().toLocaleDateString('id-ID'),
             time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
             customer: name,
-            phone: wa,
+            phone: cleanWA,
             address: addr,
             items: itemsText,
             total: total
         };
 
+        // Simpan ke Rekap Lokal
         const history = JSON.parse(localStorage.getItem(LOG_KEY)) || [];
         history.push(orderData);
         localStorage.setItem(LOG_KEY, JSON.stringify(history));
 
+        // Kirim ke Google Sheets (jika URL tersedia)
         if(config.scriptURL !== 'TEMPEL_URL_WEB_APP_ANDA_DISINI') {
             fetch(config.scriptURL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(orderData)
-            }).catch(e => console.log("Sheets Error"));
+            }).catch(e => console.log("Gagal kirim ke Sheets"));
         }
 
-        let txt = `*PESANAN NRG FAST DELIVERY*\n--------------------------\n👤 Nama: ${name}\n📱 WA: ${wa}\n📍 Alamat: ${addr}\n⏱️ Kirim: ${deliveryText}\n💳 Bayar: ${pay}\n--------------------------\n*Item:*`;
-        cart.forEach(item => txt += `\n- ${item.name} x${item.qty}`);
+        // Susun Pesan WhatsApp
+        let txt = `*PESANAN NRG FAST DELIVERY*\n--------------------------\n👤 Nama: ${name}\n📱 WA: ${cleanWA}\n📍 Alamat: ${addr}\n⏱️ Kirim: ${deliveryText}\n💳 Bayar: ${pay}\n--------------------------\n*Daftar Belanja:*`;
+        cart.forEach(item => txt += `\n- ${item.name} (x${item.qty})`);
         txt += `\n\n*TOTAL TAGIHAN: Rp ${total.toLocaleString()}*`;
-        if(pay !== "COD") txt += `\n\n_Mohon kirimkan bukti transfer setelah ini._`;
+        if(pay !== "COD") txt += `\n\n_Mohon lampirkan bukti transfer setelah pesan ini terkirim._`;
 
         window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txt)}`, '_blank');
         
@@ -379,7 +414,7 @@
         const seller = document.getElementById('adm-seller').value || "Umum";
         const img = document.getElementById('adm-img').value || "https://via.placeholder.com/150";
 
-        if (!name || !price) return alert("Lengkapi nama & harga!");
+        if (!name || !price) return alert("Mohon isi nama produk dan harga!");
 
         if (isEditing) {
             const index = document.getElementById('edit-id').value;
@@ -409,12 +444,14 @@
         isEditing = false;
         document.getElementById('adm-name').value = "";
         document.getElementById('adm-price').value = "";
+        document.getElementById('adm-seller').value = "";
+        document.getElementById('adm-img').value = "";
         document.getElementById('btn-save').innerText = "SIMPAN";
         document.getElementById('btn-cancel-edit').style.display = "none";
     }
 
     function deleteMenu(i) {
-        if(confirm("Hapus produk?")) { menuData.splice(i, 1); saveData(); }
+        if(confirm("Hapus produk ini secara permanen?")) { menuData.splice(i, 1); saveData(); }
     }
 
     function saveData() {
