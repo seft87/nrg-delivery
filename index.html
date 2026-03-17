@@ -50,7 +50,10 @@
         
         <ul class="nav nav-tabs mb-3" id="adminTab" role="tablist">
             <li class="nav-item">
-                <button class="nav-link active btn-sm" data-bs-toggle="tab" data-bs-target="#tab-tambah">Tambah Menu</button>
+                <button class="nav-link active btn-sm" data-bs-toggle="tab" data-bs-target="#tab-tambah" id="btn-tab-form">Input Menu</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link btn-sm" data-bs-toggle="tab" data-bs-target="#tab-kelola" onclick="renderManageMenu()">Kelola Menu</button>
             </li>
             <li class="nav-item">
                 <button class="nav-link btn-sm" data-bs-toggle="tab" data-bs-target="#tab-rekap" onclick="renderRekap()">Rekap Pesanan</button>
@@ -59,6 +62,7 @@
 
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tab-tambah">
+                <input type="hidden" id="adm-id"> 
                 <div class="row g-2 mb-3">
                     <div class="col-md-3"><input type="text" id="adm-name" class="form-control form-control-sm" placeholder="Nama Menu"></div>
                     <div class="col-md-2"><input type="number" id="adm-price" class="form-control form-control-sm" placeholder="Harga"></div>
@@ -71,12 +75,35 @@
                         </select>
                     </div>
                     <div class="col-md-3"><input type="text" id="adm-seller" class="form-control form-control-sm" placeholder="Toko"></div>
-                    <div class="col-md-2"><button class="btn btn-success btn-sm w-100" onclick="saveToCloud()">SIMPAN</button></div>
+                    <div class="col-md-2"><button id="btn-save" class="btn btn-success btn-sm w-100" onclick="saveToCloud()">SIMPAN</button></div>
                     <div class="col-12 mt-2"><input type="text" id="adm-img" class="form-control form-control-sm" placeholder="URL Gambar Langsung"></div>
+                </div>
+                <div id="edit-indicator" class="alert alert-warning py-1 px-2 mb-0 small" style="display:none">
+                    Sedang mengedit menu. <a href="#" onclick="resetAdminForm()">Batalkan</a>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="tab-kelola">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm rekap-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Menu</th>
+                                <th>Harga</th>
+                                <th>Kategori</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manage-menu-body"></tbody>
+                    </table>
                 </div>
             </div>
 
             <div class="tab-pane fade" id="tab-rekap">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 fw-bold">Daftar Pesanan Hari Ini</h6>
+                    <button class="btn btn-danger btn-sm" onclick="resetOrderHistory()">🗑️ RESET REKAP HARIAN</button>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm rekap-table">
                         <thead class="table-light">
@@ -160,8 +187,7 @@
         adminPhone: "6285281635766",
         pass: "25051987",
         shippingFee: 5000,
-        // URL SCRIPT BARU ANDA
-        scriptURL: 'https://script.google.com/macros/s/AKfycbxpfj3yEdCuwNVRd9SO2nMbd5qgFH-2RcIyRkY1mK-W5H7V3szSNQL3Rn60f7rjg6WW/exec'
+        scriptURL: 'https://script.google.com/macros/s/AKfycbysgHNMDZ9WsK4PPvdPtRBIgBVwW92oFEaaSHHWhuXUayanduLtn4hr6u5DU-bvgI1l/exec'
     };
 
     let menuData = [];
@@ -176,7 +202,6 @@
         try {
             const res = await fetch(config.scriptURL);
             const data = await res.json();
-            // Data dari doGet di Apps Script diasumsikan mengirim objek {menu: [], orders: []}
             menuData = data.menu || [];
             orderHistory = data.orders || [];
             renderMenu();
@@ -186,13 +211,104 @@
         showLoading(false);
     }
 
+    // --- FUNGSI RESET REKAP (BARU) ---
+    async function resetOrderHistory() {
+        if (!confirm("⚠️ PERINGATAN: Ini akan menghapus SELURUH riwayat pesanan hari ini. Lanjutkan?")) return;
+        
+        const secondConfirm = prompt("Ketik 'KONFIRMASI' untuk menghapus:");
+        if (secondConfirm !== "KONFIRMASI") return alert("Reset dibatalkan.");
+
+        showLoading(true);
+        try {
+            await fetch(config.scriptURL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify({ action: "resetOrders" }) 
+            });
+            alert("Rekap pesanan telah dikosongkan!");
+            location.reload();
+        } catch(e) {
+            alert("Gagal melakukan reset.");
+        }
+        showLoading(false);
+    }
+
+    // --- FITUR ADMIN: KELOLA MENU ---
+    function renderManageMenu() {
+        const body = document.getElementById('manage-menu-body');
+        body.innerHTML = menuData.map(item => `
+            <tr>
+                <td><small>${item.name}</small></td>
+                <td><small>Rp${parseInt(item.price).toLocaleString()}</small></td>
+                <td><small>${item.cat}</small></td>
+                <td>
+                    <button class="btn btn-warning btn-xs py-0 px-1" onclick="prepareEditMenu(${item.id})">Edit</button>
+                    <button class="btn btn-danger btn-xs py-0 px-1" onclick="deleteMenu(${item.id})">Hapus</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function prepareEditMenu(id) {
+        const item = menuData.find(x => x.id == id);
+        if(!item) return;
+        document.getElementById('adm-id').value = item.id;
+        document.getElementById('adm-name').value = item.name;
+        document.getElementById('adm-price').value = item.price;
+        document.getElementById('adm-cat').value = item.cat;
+        document.getElementById('adm-seller').value = item.seller;
+        document.getElementById('adm-img').value = item.img;
+        document.getElementById('btn-save').innerText = "UPDATE MENU";
+        document.getElementById('btn-save').classList.replace('btn-success', 'btn-warning');
+        document.getElementById('edit-indicator').style.display = 'block';
+        document.getElementById('btn-tab-form').click();
+    }
+
+    function resetAdminForm() {
+        document.getElementById('adm-id').value = "";
+        document.getElementById('adm-name').value = "";
+        document.getElementById('adm-price').value = "";
+        document.getElementById('adm-seller').value = "";
+        document.getElementById('adm-img').value = "";
+        document.getElementById('btn-save').innerText = "SIMPAN";
+        document.getElementById('btn-save').classList.replace('btn-warning', 'btn-success');
+        document.getElementById('edit-indicator').style.display = 'none';
+    }
+
+    async function deleteMenu(id) {
+        if(!confirm("Hapus menu ini?")) return;
+        showLoading(true);
+        try {
+            await fetch(config.scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "deleteMenu", id: id }) });
+            alert("Terhapus!");
+            location.reload();
+        } catch(e) { alert("Gagal"); }
+        showLoading(false);
+    }
+
+    async function saveToCloud() {
+        const id = document.getElementById('adm-id').value;
+        const name = document.getElementById('adm-name').value;
+        const price = document.getElementById('adm-price').value;
+        const cat = document.getElementById('adm-cat').value;
+        const seller = document.getElementById('adm-seller').value;
+        const img = document.getElementById('adm-img').value;
+        if(!name || !price) return alert("Lengkapi data!");
+        showLoading(true);
+        const action = id ? "editMenu" : "saveMenu";
+        try {
+            await fetch(config.scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action, id, name, price, cat, seller, img }) });
+            alert("Berhasil!");
+            location.reload();
+        } catch(e) { alert("Error"); showLoading(false); }
+    }
+
     function renderRekap() {
         const body = document.getElementById('rekap-body');
         if (orderHistory.length <= 1) {
             body.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada pesanan masuk.</td></tr>';
             return;
         }
-        // Slice(1) untuk melewati header sheet
         const rows = orderHistory.slice(1).reverse(); 
         body.innerHTML = rows.map(row => `
             <tr>
@@ -210,63 +326,20 @@
         let waRaw = document.getElementById('c-wa').value;
         const addr = document.getElementById('c-address').value;
         const payMethod = document.getElementById('c-payment').value;
-        const delivery = document.getElementById('c-delivery').value;
-        const customTime = document.getElementById('c-time').value;
-
-        if(!name || !waRaw || !addr) return alert("Mohon lengkapi data penerima!");
-
+        if(!name || !waRaw || !addr) return alert("Lengkapi data!");
         let wa = waRaw.replace(/\D/g, '');
         if (wa.startsWith("0")) wa = "62" + wa.substring(1);
-        
         const subtotal = cart.reduce((s, x) => s + (x.price * x.qty), 0);
         const total = subtotal + config.shippingFee;
         const listBarang = cart.map(x => `${x.name} (${x.qty})`).join(', ');
-
         showLoading(true);
-        
-        // 1. SIMPAN REKAP KE GOOGLE SHEETS
         try {
-            const payload = { 
-                action: "saveOrder", 
-                name: name, 
-                wa: wa, 
-                items: listBarang, 
-                total: total, 
-                payment: payMethod 
-            };
-            
-            await fetch(config.scriptURL, { 
-                method: 'POST', 
-                mode: 'no-cors', 
-                body: JSON.stringify(payload) 
-            });
-            
-            // 2. KIRIM WHATSAPP (Sama seperti sebelumnya)
+            await fetch(config.scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "saveOrder", name, wa, items: listBarang, total, payment: payMethod }) });
             let txtAdmin = `*PESANAN BARU NRG*\n👤 *Nama:* ${name}\n📍 *Alamat:* ${addr}\n📱 *WA:* ${wa}\n💳 *Bayar:* ${payMethod}\n--------------------------\n*Belanja:* ${listBarang}\n\n*TOTAL: Rp ${total.toLocaleString()}*`;
-            
-            alert("Pesanan tersimpan di sistem & akan diteruskan ke WhatsApp.");
             window.open(`https://wa.me/${config.adminPhone}?text=${encodeURIComponent(txtAdmin)}`, '_blank');
             location.reload();
-
-        } catch (e) {
-            alert("Terjadi kesalahan saat menyimpan ke Cloud.");
-        }
+        } catch (e) { alert("Error!"); }
         showLoading(false);
-    }
-
-    // --- FUNGSI PENDUKUNG (TIDAK BERUBAH) ---
-    function toggleCustomTime() {
-        const deliverySelect = document.getElementById('c-delivery').value;
-        document.getElementById('c-time').style.display = (deliverySelect === "Lainnya") ? "block" : "none";
-    }
-
-    function showPaymentInfo() {
-        const payMethod = document.getElementById('c-payment').value;
-        const infoBox = document.getElementById('payment-details');
-        const infoText = document.getElementById('payment-text');
-        infoBox.style.display = (payMethod === "COD") ? "none" : "block";
-        if (payMethod === "BRI") infoText.innerHTML = "<strong>BRI:</strong> 424901016402531<br>a.n Asep Saripudin";
-        if (payMethod === "DANA") infoText.innerHTML = "<strong>DANA:</strong> 085281635766<br>a.n Asep Saripudin";
     }
 
     function renderFilters() {
@@ -291,19 +364,6 @@
                 </div>
             </div>
         `).join('');
-    }
-
-    async function saveToCloud() {
-        const name = document.getElementById('adm-name').value;
-        const price = document.getElementById('adm-price').value;
-        const cat = document.getElementById('adm-cat').value;
-        const seller = document.getElementById('adm-seller').value;
-        const img = document.getElementById('adm-img').value;
-        if(!name || !price) return alert("Lengkapi data!");
-        showLoading(true);
-        await fetch(config.scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "saveMenu", name, price, cat, seller, img }) });
-        alert("Menu Baru Tersimpan!");
-        location.reload();
     }
 
     function addToCart(id) {
@@ -333,21 +393,23 @@
         totalDisp.innerText = `Rp ${(subtotal + config.shippingFee).toLocaleString()}`;
     }
 
-    function filterMenu(cat, el) {
-        currentFilter = cat;
-        renderFilters();
-        renderMenu();
+    function toggleCustomTime() {
+        const deliverySelect = document.getElementById('c-delivery').value;
+        document.getElementById('c-time').style.display = (deliverySelect === "Lainnya") ? "block" : "none";
     }
 
-    function toggleAdmin() {
-        if (prompt("Password Admin NRG:") === config.pass) {
-            document.getElementById('admin-panel').style.display = 'block';
-        }
+    function showPaymentInfo() {
+        const payMethod = document.getElementById('c-payment').value;
+        const infoBox = document.getElementById('payment-details');
+        const infoText = document.getElementById('payment-text');
+        infoBox.style.display = (payMethod === "COD") ? "none" : "block";
+        if (payMethod === "BRI") infoText.innerHTML = "<strong>BRI:</strong> 424901016402531<br>a.n Asep Saripudin";
+        if (payMethod === "DANA") infoText.innerHTML = "<strong>DANA:</strong> 085281635766<br>a.n Asep Saripudin";
     }
 
-    function showLoading(show) {
-        document.getElementById('loading').style.display = show ? 'flex' : 'none';
-    }
+    function filterMenu(cat, el) { currentFilter = cat; renderFilters(); renderMenu(); }
+    function toggleAdmin() { if (prompt("Password Admin NRG:") === config.pass) { document.getElementById('admin-panel').style.display = 'block'; } }
+    function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
 
     init();
 </script>
